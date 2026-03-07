@@ -10,9 +10,10 @@ import type { Discipline } from '@/features/scheduling/types'
 
 interface Props {
   disciplines: Discipline[]
+  templateCounts: Record<string, number>
 }
 
-export function DisciplinesPageClient({ disciplines }: Props) {
+export function DisciplinesPageClient({ disciplines, templateCounts }: Props) {
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
   const [color, setColor] = useState('#A855F7')
@@ -110,7 +111,9 @@ export function DisciplinesPageClient({ disciplines }: Props) {
                 <>
                   <div>
                     <p className="font-semibold text-white text-sm">{d.name}</p>
-                    <p className="text-xs text-white/40 mt-0.5">— plantillas activas</p>
+                    <p className="text-xs text-white/40 mt-0.5">
+                      {templateCounts[d.id] ? `${templateCounts[d.id]} plantilla${templateCounts[d.id] === 1 ? '' : 's'} activa${templateCounts[d.id] === 1 ? '' : 's'}` : 'Sin plantillas'}
+                    </p>
                   </div>
                   <div className="flex items-center justify-between">
                     <span

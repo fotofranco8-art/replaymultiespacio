@@ -45,25 +45,26 @@ export function PaymentForm({ students, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
-        <h2 className="text-lg font-bold text-gray-900 mb-5">Registrar pago</h2>
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="rounded-2xl p-6 w-full max-w-md border border-white/10" style={{ background: '#1A0A30' }}>
+        <h2 className="text-lg font-bold text-white mb-5">Registrar pago</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Alumno</label>
+            <label className="block text-sm font-medium text-white/60 mb-1">Alumno</label>
             <select
               name="student_id"
               required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              style={{ background: 'rgba(255,255,255,0.07)' }}
             >
-              <option value="">Seleccionar alumno...</option>
+              <option value="" style={{ background: '#1A0A30' }}>Seleccionar alumno...</option>
               {students.map((s) => (
-                <option key={s.id} value={s.id}>{s.full_name}</option>
+                <option key={s.id} value={s.id} style={{ background: '#1A0A30' }}>{s.full_name}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Monto base ($)</label>
+            <label className="block text-sm font-medium text-white/60 mb-1">Monto base ($)</label>
             <input
               name="amount"
               type="number"
@@ -72,11 +73,12 @@ export function PaymentForm({ students, onClose }: Props) {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              style={{ background: 'rgba(255,255,255,0.07)' }}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Metodo de pago</label>
+            <label className="block text-sm font-medium text-white/60 mb-2">Método de pago</label>
             <div className="flex gap-3">
               {(['cash', 'transfer'] as const).map((m) => (
                 <button
@@ -85,9 +87,10 @@ export function PaymentForm({ students, onClose }: Props) {
                   onClick={() => setMethod(m)}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
                     method === m
-                      ? 'bg-gray-900 text-white border-gray-900'
-                      : 'text-gray-700 border-gray-200 hover:bg-gray-50'
+                      ? 'text-white border-purple-500'
+                      : 'text-white/50 border-white/10 hover:bg-white/5'
                   }`}
+                  style={method === m ? { background: 'linear-gradient(135deg, #A855F7, #7C3AED)' } : {}}
                 >
                   {m === 'cash' ? 'Efectivo' : 'Transferencia'}
                 </button>
@@ -96,16 +99,16 @@ export function PaymentForm({ students, onClose }: Props) {
           </div>
 
           {method === 'transfer' && numAmount > 0 && (
-            <div className="bg-amber-50 rounded-lg p-4 text-sm space-y-1">
-              <div className="flex justify-between text-gray-600">
+            <div className="rounded-lg p-4 text-sm space-y-1 border border-amber-500/20" style={{ background: 'rgba(245,158,11,0.08)' }}>
+              <div className="flex justify-between text-white/60">
                 <span>Monto base</span>
                 <span>${numAmount.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-amber-700">
+              <div className="flex justify-between text-amber-400">
                 <span>Recargo 10%</span>
                 <span>+${surcharge.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between font-bold text-gray-900 border-t border-amber-200 pt-1">
+              <div className="flex justify-between font-bold text-white border-t border-white/10 pt-1">
                 <span>Total a cobrar</span>
                 <span>${finalAmount.toFixed(2)}</span>
               </div>
@@ -113,29 +116,31 @@ export function PaymentForm({ students, onClose }: Props) {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-white/60 mb-1">
               Notas (opcional)
             </label>
             <input
               name="notes"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              style={{ background: 'rgba(255,255,255,0.07)' }}
             />
           </div>
 
-          {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+          {error && <p className="text-sm text-red-400 bg-red-500/10 rounded-lg px-3 py-2">{error}</p>}
 
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-gray-200 rounded-lg py-2 text-sm text-gray-700 hover:bg-gray-50"
+              className="flex-1 border border-white/10 text-white/60 rounded-lg py-2 text-sm hover:bg-white/5 transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={pending}
-              className="flex-1 bg-gray-900 text-white rounded-lg py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+              className="flex-1 text-white rounded-lg py-2 text-sm font-medium disabled:opacity-50 transition-opacity hover:opacity-80"
+              style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
             >
               {pending ? 'Registrando...' : `Confirmar $${finalAmount.toFixed(2)}`}
             </button>

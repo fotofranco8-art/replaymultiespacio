@@ -30,7 +30,7 @@ async function getAdminStats() {
       .eq('is_cancelled', false),
     supabase
       .from('payments')
-      .select('final_amount')
+      .select('final_amount, amount, method')
       .eq('center_id', profile.center_id)
       .gte('created_at', `${today}T00:00:00`)
       .lte('created_at', `${today}T23:59:59`),
@@ -47,12 +47,17 @@ async function getAdminStats() {
       .order('start_time'),
   ])
 
-  const cajaHoy = (paymentsToday ?? []).reduce((sum, p) => sum + Number(p.final_amount), 0)
+  const payments = paymentsToday ?? []
+  const cajaHoy = payments.reduce((sum, p) => sum + Number(p.final_amount), 0)
+  const cajaEfectivo = payments.filter((p) => p.method === 'cash').reduce((sum, p) => sum + Number(p.final_amount), 0)
+  const cajaTransferencia = payments.filter((p) => p.method === 'transfer').reduce((sum, p) => sum + Number(p.amount), 0)
 
   return {
     totalStudents: totalStudents ?? 0,
     classesToday: classesToday ?? 0,
     cajaHoy,
+    cajaEfectivo,
+    cajaTransferencia,
     classesWithAttendance: classesWithAttendance ?? [],
   }
 }
@@ -190,11 +195,15 @@ export default async function AdminPage() {
           <div className="space-y-2 mb-4 flex-1">
             <div className="flex justify-between text-sm">
               <span className="text-white/50">Efectivo</span>
-              <span className="text-white font-medium">—</span>
+              <span className="text-green-400 font-medium">
+                {stats ? `$${stats.cajaEfectivo.toLocaleString('es-AR', { minimumFractionDigits: 0 })}` : '—'}
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-white/50">Transferencia</span>
-              <span className="text-white font-medium">—</span>
+              <span className="text-blue-400 font-medium">
+                {stats ? `$${stats.cajaTransferencia.toLocaleString('es-AR', { minimumFractionDigits: 0 })}` : '—'}
+              </span>
             </div>
           </div>
           <Link
