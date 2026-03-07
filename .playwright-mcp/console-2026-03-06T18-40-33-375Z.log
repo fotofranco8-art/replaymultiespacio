@@ -1,0 +1,2 @@
+[    9774ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://urailgjwyqshxhlptdzn.supabase.co/auth/v1/token?grant_type=password:0
+[  119857ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://urailgjwyqshxhlptdzn.supabase.co/auth/v1/token?grant_type=password:0
