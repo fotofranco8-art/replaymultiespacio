@@ -14,7 +14,7 @@ export function WeeklyTemplateGrid({ templates }: Props) {
 
   if (templates.length === 0) {
     return (
-      <p className="text-sm text-gray-500 py-6 text-center">
+      <p className="text-sm text-white/40 py-6 text-center">
         Sin plantillas. Crea la primera para comenzar a proyectar el mes.
       </p>
     )
@@ -28,7 +28,7 @@ export function WeeklyTemplateGrid({ templates }: Props) {
     <div className="grid grid-cols-7 gap-2">
       {DAY_NAMES.map((day, i) => (
         <div key={i} className="min-h-24">
-          <div className="text-xs font-semibold text-gray-500 mb-2 text-center">{day}</div>
+          <div className="text-xs font-semibold text-white/50 mb-2 text-center">{day}</div>
           <div className="space-y-1.5">
             {byDay[i].map((t) => (
               <div
@@ -39,12 +39,12 @@ export function WeeklyTemplateGrid({ templates }: Props) {
                   borderLeft: `3px solid ${t.disciplines?.color ?? '#6366f1'}`,
                 }}
               >
-                <div className="font-semibold text-gray-800">{t.disciplines?.name}</div>
-                <div className="text-gray-600">
+                <div className="font-semibold text-white">{t.disciplines?.name}</div>
+                <div className="text-white/60">
                   {t.start_time.slice(0, 5)}–{t.end_time.slice(0, 5)}
                 </div>
-                <div className="text-gray-500">{t.profiles?.full_name}</div>
-                {t.room && <div className="text-gray-400">{t.room}</div>}
+                <div className="text-white/40">{t.profiles?.full_name}</div>
+                {t.room && <div className="text-white/30">{t.room}</div>}
                 <button
                   onClick={() => startTransition(() => deleteClassTemplate(t.id))}
                   disabled={pending}

@@ -29,15 +29,15 @@ export function MonthCalendarGrid({ classes, year, month, onSelectClass }: Props
   const today = new Date()
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="grid grid-cols-7 border-b border-gray-100">
+    <div className="rounded-xl border border-white/10 overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)' }}>
+      <div className="grid grid-cols-7 border-b border-white/10">
         {DAY_HEADERS.map((d) => (
-          <div key={d} className="py-2 text-center text-xs font-medium text-gray-400">
+          <div key={d} className="py-2 text-center text-xs font-medium text-white/40">
             {d}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 divide-x divide-y divide-gray-100">
+      <div className="grid grid-cols-7 divide-x divide-y divide-white/5">
         {cells.map((day, idx) => {
           const dateStr = day
             ? `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
@@ -49,12 +49,12 @@ export function MonthCalendarGrid({ classes, year, month, onSelectClass }: Props
             year === today.getFullYear()
 
           return (
-            <div key={idx} className={`min-h-24 p-1.5 ${!day ? 'bg-gray-50/50' : ''}`}>
+            <div key={idx} className={`min-h-24 p-1.5`} style={!day ? { background: 'rgba(0,0,0,0.15)' } : undefined}>
               {day && (
                 <>
                   <span
                     className={`text-xs font-medium mb-1 inline-flex items-center justify-center w-6 h-6 rounded-full ${
-                      isToday ? 'bg-indigo-600 text-white' : 'text-gray-500'
+                      isToday ? 'bg-purple-600 text-white' : 'text-white/50'
                     }`}
                   >
                     {day}

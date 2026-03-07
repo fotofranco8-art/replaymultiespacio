@@ -40,38 +40,31 @@ mostrá un resumen claro y pedí confirmación explícita del admin.`
     maxSteps: 8,
   }
 
-  const tryStream = async (useGemini = false) => {
-    if (useGemini) {
-      const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY! })
-      return streamText({ model: google('gemini-2.0-flash'), ...config })
+  const saveText = async (text: string) => {
+    if (text) {
+      await supabase.from('ai_messages').insert({
+        center_id: CENTER_ID,
+        role: 'assistant',
+        content: text,
+      })
     }
-    const xai = createXai({ apiKey: process.env.XAI_API_KEY! })
-    return streamText({ model: xai('grok-3-mini-beta'), ...config })
   }
 
+  // Try Gemini first (stable), fallback to xAI
   try {
-    const result = await tryStream(false)
-    result.text.then(async (text) => {
-      if (text) {
-        await supabase.from('ai_messages').insert({
-          center_id: CENTER_ID,
-          role: 'assistant',
-          content: text,
-        })
-      }
-    })
+    const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY! })
+    const result = streamText({ model: google('gemini-2.0-flash'), ...config })
+    void result.text.then(saveText)
     return result.toTextStreamResponse()
   } catch {
-    const result = await tryStream(true)
-    result.text.then(async (text) => {
-      if (text) {
-        await supabase.from('ai_messages').insert({
-          center_id: CENTER_ID,
-          role: 'assistant',
-          content: text,
-        })
-      }
-    })
-    return result.toTextStreamResponse()
+    try {
+      const xai = createXai({ apiKey: process.env.XAI_API_KEY! })
+      const result = streamText({ model: xai('grok-3-mini-beta'), ...config })
+      void result.text.then(saveText)
+      return result.toTextStreamResponse()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error del servidor de IA'
+      return new Response(msg, { status: 500 })
+    }
   }
 }

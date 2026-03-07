@@ -53,18 +53,25 @@ export default function ScanPage() {
         </p>
 
         {state === 'result' && result ? (
-          /* Result overlay */
-          <div className="w-full flex flex-col items-center gap-5 py-8">
+          /* Result card */
+          <div
+            className="w-full flex flex-col items-center gap-5 p-6"
+            style={{
+              background: result.success ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
+              border: result.success ? '1px solid rgba(34,197,94,0.2)' : '1px solid rgba(239,68,68,0.2)',
+              borderRadius: '20px',
+            }}
+          >
             <div
-              className="w-24 h-24 rounded-full flex items-center justify-center"
+              className="w-20 h-20 rounded-full flex items-center justify-center"
               style={{ background: result.success ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)' }}
             >
               {result.success ? (
-                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               ) : (
-                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               )}
@@ -85,9 +92,13 @@ export default function ScanPage() {
 
             <button
               onClick={handleReset}
-              className="mt-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all"
+              className="mt-2 flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all"
               style={{ background: '#FF2D78' }}
             >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 1 0 .49-3.51" />
+              </svg>
               Escanear de nuevo
             </button>
           </div>

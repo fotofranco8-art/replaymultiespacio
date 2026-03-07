@@ -53,7 +53,10 @@ export function AgentChat() {
     setInput('')
     setIsLoading(true)
 
-    const history = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }))
+    // Filter out the hardcoded welcome message — APIs require conversations to start with 'user'
+    const history = [...messages, userMsg]
+      .filter((m) => m.id !== 'init')
+      .map((m) => ({ role: m.role, content: m.content }))
 
     try {
       const response = await fetch('/api/ai/chat', {
