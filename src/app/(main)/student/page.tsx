@@ -41,7 +41,7 @@ export default async function StudentPage() {
   })
 
   return (
-    <div className="min-h-screen p-5" style={{ background: '#080616' }}>
+    <div className="min-h-screen p-5" style={{ background: '#0A0A0A' }}>
       <div className="max-w-sm mx-auto space-y-5">
 
         {/* Header */}
@@ -53,10 +53,10 @@ export default async function StudentPage() {
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white font-semibold text-base leading-tight">
+            <p className="font-display font-bold text-[18px] text-white leading-tight">
               Hola, {profile.full_name?.split(' ')[0]}
             </p>
-            <p className="text-white/40 text-xs capitalize">{today}</p>
+            <p className="font-body text-[12px] capitalize" style={{ color: '#71717A' }}>{today}</p>
           </div>
         </div>
 
@@ -87,7 +87,7 @@ export default async function StudentPage() {
                   {timeLabel}
                 </span>
               </div>
-              <p className="text-white font-bold text-xl mb-1">{nextClass.disciplineName}</p>
+              <p className="font-display font-bold text-xl mb-1 text-white">{nextClass.disciplineName}</p>
               <p className="text-white/60 text-sm mb-1">
                 {nextClass.startTime.slice(0, 5)}–{nextClass.endTime.slice(0, 5)}
                 {nextClass.room ? ` · ${nextClass.room}` : ''}
@@ -126,21 +126,21 @@ export default async function StudentPage() {
 
         {/* Tips Rebot */}
         <div>
-          <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Para vos — Rebot</p>
+          <p className="font-body font-bold text-[10px] uppercase tracking-wider mb-3" style={{ color: '#52525B' }}>Para vos — Rebot</p>
           <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
             {REBOT_TIPS.map((tip) => (
               <div
                 key={tip.title}
                 className="shrink-0 rounded-xl p-4"
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: '#18181B',
+                  border: '1px solid #27272A',
                   width: '148px',
                 }}
               >
                 <span className="text-2xl">{tip.emoji}</span>
-                <p className="text-white font-semibold text-sm mt-2">{tip.title}</p>
-                <p className="text-white/40 text-xs mt-1 leading-snug">{tip.text}</p>
+                <p className="font-display font-semibold text-white text-sm mt-2">{tip.title}</p>
+                <p className="font-body text-white/40 text-xs mt-1 leading-snug">{tip.text}</p>
               </div>
             ))}
           </div>
@@ -149,21 +149,21 @@ export default async function StudentPage() {
         {/* Historial reciente */}
         {history.length > 0 && (
           <div>
-            <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Historial reciente</p>
+            <p className="font-body font-bold text-[10px] uppercase tracking-wider mb-3" style={{ color: '#52525B' }}>Historial reciente</p>
             <div className="space-y-2">
               {history.map((item) => (
                 <div
                   key={item.classId}
                   className="flex items-center gap-3 rounded-xl px-4 py-3"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+                  style={{ background: '#18181B', border: '1px solid #27272A' }}
                 >
                   <div
                     className="w-2 h-2 rounded-full shrink-0"
                     style={{ background: item.disciplineColor }}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{item.className}</p>
-                    <p className="text-white/40 text-xs">
+                    <p className="font-display font-semibold text-white text-sm truncate">{item.className}</p>
+                    <p className="font-mono-custom text-[11px]" style={{ color: '#52525B' }}>
                       {formatDate(item.scheduledDate)} · {item.startTime.slice(0, 5)}
                     </p>
                   </div>

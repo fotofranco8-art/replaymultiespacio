@@ -57,7 +57,7 @@ export default function ProfileClient({ profile, membership, recoveryBalance }: 
   }
 
   return (
-    <div className="min-h-screen p-5" style={{ background: '#080616' }}>
+    <div className="min-h-screen p-5" style={{ background: '#0A0A0A' }}>
       <div className="max-w-sm mx-auto space-y-5 pt-4">
 
         {/* Avatar + nombre */}
@@ -101,7 +101,7 @@ export default function ProfileClient({ profile, membership, recoveryBalance }: 
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <p className="text-white font-semibold text-xl">{savedName}</p>
+              <p className="font-display font-bold text-[20px] text-white">{savedName}</p>
               <button onClick={handleEdit} className="text-white/30 hover:text-white/60 transition-colors">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -117,10 +117,10 @@ export default function ProfileClient({ profile, membership, recoveryBalance }: 
           className="rounded-2xl p-6 text-center"
           style={{ background: 'rgba(255,45,120,0.08)', border: '1px solid rgba(255,45,120,0.2)' }}
         >
-          <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1">
+          <p className="font-body font-bold text-[10px] uppercase tracking-wider mb-1" style={{ color: 'rgba(255,45,120,0.53)' }}>
             Clases de recuperación
           </p>
-          <p className="font-bold" style={{ fontSize: '72px', lineHeight: 1, color: '#FF2D78' }}>
+          <p className="font-display font-extrabold" style={{ fontSize: '72px', lineHeight: 1, color: '#FF2D78' }}>
             {recoveryBalance}
           </p>
           <p className="text-white/30 text-xs mt-2">
@@ -131,9 +131,9 @@ export default function ProfileClient({ profile, membership, recoveryBalance }: 
         {/* Membresía */}
         <div
           className="rounded-2xl p-5"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          style={{ background: '#18181B', border: '1px solid #27272A' }}
         >
-          <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Mi membresía</p>
+          <p className="font-body font-bold text-[10px] uppercase tracking-wider mb-3" style={{ color: '#52525B' }}>Mi membresía</p>
           {membership ? (
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
@@ -168,8 +168,8 @@ export default function ProfileClient({ profile, membership, recoveryBalance }: 
         <form action={logout} className="pt-2">
           <button
             type="submit"
-            className="w-full py-3 rounded-xl text-sm font-medium transition-all"
-            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}
+            className="font-body w-full py-3 rounded-xl text-sm font-medium transition-all"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #3F3F46', color: '#A1A1AA' }}
           >
             Cerrar sesión
           </button>

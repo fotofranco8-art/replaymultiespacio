@@ -44,11 +44,11 @@ export default function ScanPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center" style={{ background: '#080616' }}>
+    <div className="min-h-screen flex flex-col items-center" style={{ background: '#0A0A0A' }}>
       <div className="w-full max-w-sm px-5 pt-8 pb-6 flex flex-col items-center">
 
-        <h1 className="text-white font-bold text-xl mb-1">Escanear QR</h1>
-        <p className="text-white/40 text-sm text-center mb-8">
+        <h1 className="font-display font-bold text-[22px] text-white mb-1">Escanear QR</h1>
+        <p className="font-body text-white/40 text-sm text-center mb-8">
           Apuntá tu cámara al código QR del kiosco de recepción
         </p>
 
@@ -71,7 +71,7 @@ export default function ScanPage() {
             </div>
 
             {result.studentName && (
-              <p className="text-white font-bold text-lg text-center">{result.studentName}</p>
+              <p className="font-display font-bold text-[20px] text-white text-center">{result.studentName}</p>
             )}
             {result.className && (
               <p className="text-white/60 text-sm text-center">{result.className}</p>

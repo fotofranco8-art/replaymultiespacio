@@ -4,3 +4,15 @@
  * Personaliza tu tema aquí
  * Documentación: https://tailwindcss.com/docs/theme
  */
+
+.font-display {
+  font-family: var(--font-space-grotesk), sans-serif;
+}
+
+.font-body {
+  font-family: var(--font-manrope), sans-serif;
+}
+
+.font-mono-custom {
+  font-family: var(--font-space-mono), monospace;
+}
