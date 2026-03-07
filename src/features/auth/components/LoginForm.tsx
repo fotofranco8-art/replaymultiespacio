@@ -20,7 +20,7 @@ export function LoginForm() {
   return (
     <form action={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="email" className="block text-sm font-medium text-white/60 mb-1">
           Email
         </label>
         <input
@@ -29,13 +29,14 @@ export function LoginForm() {
           type="email"
           required
           autoComplete="email"
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           placeholder="tu@email.com"
+          className="w-full rounded-lg border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/30 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          style={{ background: 'rgba(255,255,255,0.07)' }}
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="password" className="block text-sm font-medium text-white/60 mb-1">
           Contraseña
         </label>
         <input
@@ -44,13 +45,14 @@ export function LoginForm() {
           type="password"
           required
           autoComplete="current-password"
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           placeholder="••••••••"
+          className="w-full rounded-lg border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/30 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          style={{ background: 'rgba(255,255,255,0.07)' }}
         />
       </div>
 
       {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
           {error === 'Invalid login credentials'
             ? 'Email o contraseña incorrectos'
             : error}
@@ -60,7 +62,8 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-80"
+        style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
       >
         {loading ? 'Ingresando...' : 'Ingresar'}
       </button>

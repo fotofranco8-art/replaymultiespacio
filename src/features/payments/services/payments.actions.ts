@@ -78,6 +78,15 @@ export async function registerPayment(input: NewPaymentInput) {
   })
 
   if (error) throw error
+
+  // Unblock QR when payment is registered
+  await supabase
+    .from('memberships')
+    .update({ is_blocked: false })
+    .eq('student_id', input.student_id)
+    .eq('center_id', adminProfile.center_id)
+    .eq('status', 'active')
+
   revalidatePath('/admin/payments')
 }
 

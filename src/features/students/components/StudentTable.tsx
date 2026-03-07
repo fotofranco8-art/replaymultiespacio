@@ -14,7 +14,7 @@ function ToggleButton({ studentId, isActive }: { studentId: string; isActive: bo
     <button
       onClick={() => startTransition(() => toggleStudentStatus(studentId, !isActive))}
       disabled={pending}
-      className="text-xs text-gray-400 hover:text-gray-700 underline disabled:opacity-50"
+      className="text-xs text-white/40 hover:text-white/70 disabled:opacity-50 transition-colors"
     >
       {isActive ? 'Desactivar' : 'Activar'}
     </button>
@@ -24,7 +24,7 @@ function ToggleButton({ studentId, isActive }: { studentId: string; isActive: bo
 export function StudentTable({ students }: Props) {
   if (students.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500 text-sm">
+      <div className="text-center py-12 text-white/40 text-sm">
         No hay alumnos registrados. Agrega el primero.
       </div>
     )
@@ -34,7 +34,7 @@ export function StudentTable({ students }: Props) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-gray-500 border-b border-gray-100">
+          <tr className="text-left text-white/40 border-b border-white/10">
             <th className="pb-3 font-medium">Nombre</th>
             <th className="pb-3 font-medium">Email</th>
             <th className="pb-3 font-medium">Disciplina</th>
@@ -44,27 +44,27 @@ export function StudentTable({ students }: Props) {
             <th className="pb-3 font-medium"></th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-50">
+        <tbody className="divide-y divide-white/5">
           {students.map((student) => {
             const membership = student.memberships?.[0]
             return (
-              <tr key={student.id} className="hover:bg-gray-50">
-                <td className="py-3 font-medium text-gray-900">{student.full_name}</td>
-                <td className="py-3 text-gray-500">{student.email}</td>
-                <td className="py-3 text-gray-700">
+              <tr key={student.id} className="hover:bg-white/[0.02] transition-colors">
+                <td className="py-3 font-medium text-white">{student.full_name}</td>
+                <td className="py-3 text-white/50">{student.email}</td>
+                <td className="py-3 text-white/70">
                   {membership?.disciplines?.name ?? '—'}
                 </td>
-                <td className="py-3 text-gray-700">{membership?.plan_name ?? '—'}</td>
-                <td className="py-3 text-gray-700">
+                <td className="py-3 text-white/70">{membership?.plan_name ?? '—'}</td>
+                <td className="py-3 text-white/70">
                   {membership ? `$${Number(membership.monthly_fee).toLocaleString()}` : '—'}
                 </td>
                 <td className="py-3">
                   {membership?.status === 'active' ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-700">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-500/20 text-green-400">
                       Activo
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-700">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-white/10 text-white/40">
                       {membership?.status ?? 'Sin plan'}
                     </span>
                   )}

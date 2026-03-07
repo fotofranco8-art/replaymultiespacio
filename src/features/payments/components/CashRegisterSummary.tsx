@@ -7,21 +7,21 @@ interface Props {
 export function CashRegisterSummary({ summary }: Props) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div className="bg-green-50 rounded-xl p-4">
-        <p className="text-xs font-medium text-green-700 mb-1">Efectivo</p>
-        <p className="text-2xl font-bold text-green-900">${summary.cash_total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</p>
+      <div className="rounded-xl border border-white/10 p-5" style={{ background: 'rgba(255,255,255,0.04)' }}>
+        <p className="text-xs text-white/50 mb-2">Total mes</p>
+        <p className="text-2xl font-bold text-white">${summary.grand_total.toLocaleString('es-AR', { minimumFractionDigits: 0 })}</p>
       </div>
-      <div className="bg-blue-50 rounded-xl p-4">
-        <p className="text-xs font-medium text-blue-700 mb-1">Transferencia (base)</p>
-        <p className="text-2xl font-bold text-blue-900">${summary.transfer_total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</p>
+      <div className="rounded-xl border border-white/10 p-5" style={{ background: 'rgba(255,255,255,0.04)' }}>
+        <p className="text-xs text-white/50 mb-2">Efectivo</p>
+        <p className="text-2xl font-bold text-green-400">${summary.cash_total.toLocaleString('es-AR', { minimumFractionDigits: 0 })}</p>
       </div>
-      <div className="bg-amber-50 rounded-xl p-4">
-        <p className="text-xs font-medium text-amber-700 mb-1">Recargos (10%)</p>
-        <p className="text-2xl font-bold text-amber-900">${summary.surcharge_total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</p>
+      <div className="rounded-xl border border-white/10 p-5" style={{ background: 'rgba(255,255,255,0.04)' }}>
+        <p className="text-xs text-white/50 mb-2">Transferencias</p>
+        <p className="text-2xl font-bold text-blue-400">${summary.transfer_total.toLocaleString('es-AR', { minimumFractionDigits: 0 })}</p>
       </div>
-      <div className="bg-gray-900 rounded-xl p-4">
-        <p className="text-xs font-medium text-gray-300 mb-1">Total del dia</p>
-        <p className="text-2xl font-bold text-white">${summary.grand_total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</p>
+      <div className="rounded-xl border border-white/10 p-5" style={{ background: 'rgba(255,255,255,0.04)' }}>
+        <p className="text-xs text-white/50 mb-2">Recargo +10%</p>
+        <p className="text-2xl font-bold text-amber-400">${summary.surcharge_total.toLocaleString('es-AR', { minimumFractionDigits: 0 })}</p>
       </div>
     </div>
   )

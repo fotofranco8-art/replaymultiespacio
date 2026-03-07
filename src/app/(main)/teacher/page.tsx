@@ -2,6 +2,7 @@ import { logout, getProfile } from '@/features/auth/services/auth.actions'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 
+
 async function getTeacherClasses(teacherId: string) {
   const supabase = await createClient()
   const today = new Date().toISOString().split('T')[0]
@@ -29,25 +30,30 @@ export default async function TeacherPage() {
   const classes = await getTeacherClasses(profile.id)
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen p-8" style={{ background: '#080616' }}>
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Portal Profesor</h1>
-            <p className="text-sm text-gray-500 mt-1">Hola, {profile.full_name}</p>
+            <h1 className="text-2xl font-bold text-white">Portal Profesor</h1>
+            <p className="text-sm text-white/50 mt-0.5">Hola, {profile.full_name}</p>
           </div>
-          <form action={logout}>
-            <button type="submit" className="text-sm text-gray-500 hover:text-gray-700 underline">
-              Cerrar sesion
-            </button>
-          </form>
+          <div className="flex items-center gap-4">
+            <Link href="/teacher/profile" className="text-sm text-white/40 hover:text-white/70 transition-colors">
+              Mi perfil
+            </Link>
+            <form action={logout}>
+              <button type="submit" className="text-sm text-white/40 hover:text-white/70 transition-colors">
+                Cerrar sesión
+              </button>
+            </form>
+          </div>
         </div>
 
-        <h2 className="font-semibold text-gray-900 mb-3">Mis clases de hoy</h2>
+        <h2 className="font-semibold text-white/70 text-xs uppercase tracking-widest mb-3">Mis clases de hoy</h2>
 
         {classes.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <p className="text-sm text-gray-500">Sin clases programadas para hoy.</p>
+          <div className="rounded-xl border border-white/10 p-8 text-center" style={{ background: 'rgba(255,255,255,0.04)' }}>
+            <p className="text-sm text-white/40">Sin clases programadas para hoy.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -68,26 +74,25 @@ export default async function TeacherPage() {
                 <Link
                   key={cls.id}
                   href={`/teacher/class/${cls.id}`}
-                  className="block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow"
+                  className="flex items-center gap-4 rounded-xl border border-white/10 p-5 hover:border-white/20 transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.04)' }}
                 >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold"
-                      style={{ backgroundColor: disciplineColor ?? '#6366f1' }}
-                    >
-                      {disciplineName?.charAt(0)}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{disciplineName}</p>
-                      <p className="text-sm text-gray-500">
-                        {cls.start_time.slice(0, 5)}–{cls.end_time.slice(0, 5)}
-                        {cls.room ? ` · ${cls.room}` : ''}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-gray-900">{present}/{enrolled}</p>
-                      <p className="text-xs text-gray-500">presentes</p>
-                    </div>
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg shrink-0"
+                    style={{ backgroundColor: disciplineColor ?? '#A855F7' }}
+                  >
+                    {disciplineName?.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-white">{disciplineName}</p>
+                    <p className="text-sm text-white/40 mt-0.5">
+                      {cls.start_time.slice(0, 5)}–{cls.end_time.slice(0, 5)}
+                      {cls.room ? ` · ${cls.room}` : ''}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-lg font-bold text-white">{present}/{enrolled}</p>
+                    <p className="text-xs text-white/40">presentes</p>
                   </div>
                 </Link>
               )

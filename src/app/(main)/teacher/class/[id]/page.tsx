@@ -44,31 +44,31 @@ export default async function ClassRosterPage({ params }: Props) {
     : (cls.disciplines as { name: string; color: string } | null)?.color
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen p-6" style={{ background: '#080616' }}>
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <Link href="/teacher" className="text-sm text-gray-500 hover:text-gray-700">
+          <Link href="/teacher" className="text-sm text-white/40 hover:text-white/70 transition-colors">
             ← Mis clases
           </Link>
           <form action={logout}>
-            <button type="submit" className="text-sm text-gray-400 hover:text-gray-700">
-              Cerrar sesion
+            <button type="submit" className="text-sm text-white/40 hover:text-white/70 transition-colors">
+              Cerrar sesión
             </button>
           </form>
         </div>
 
         <div
           className="rounded-2xl p-6 mb-6 text-white"
-          style={{ backgroundColor: disciplineColor ?? '#6366f1' }}
+          style={{ backgroundColor: disciplineColor ?? '#A855F7' }}
         >
           <h1 className="text-2xl font-bold mb-1">{disciplineName}</h1>
-          <p className="opacity-90 text-sm">
+          <p className="opacity-80 text-sm">
             {cls.scheduled_date} · {cls.start_time.slice(0, 5)}–{cls.end_time.slice(0, 5)}
             {cls.room ? ` · ${cls.room}` : ''}
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="rounded-xl border border-white/10 p-6" style={{ background: 'rgba(255,255,255,0.04)' }}>
           <RosterList
             classId={id}
             initial={(attendance ?? []) as unknown as Parameters<typeof RosterList>[0]['initial']}

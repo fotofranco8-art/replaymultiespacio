@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { AdminNav } from '@/shared/components/AdminNav'
 import { WeeklyTemplateGrid } from '@/features/scheduling/components/WeeklyTemplateGrid'
 import { HolidayManager } from '@/features/scheduling/components/HolidayManager'
 import { NewTemplateForm } from '@/features/scheduling/components/NewTemplateForm'
@@ -53,8 +52,7 @@ export function SchedulingPageClient({ disciplines, templates, holidays, teacher
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AdminNav />
+    <div>
       <div className="max-w-7xl mx-auto p-8 space-y-8">
         {/* Disciplines */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">

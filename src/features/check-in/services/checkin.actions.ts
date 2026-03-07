@@ -55,10 +55,10 @@ export async function validateAndCheckin(token: string): Promise<CheckinResult> 
     return { success: false, message: 'No perteneces a este centro' }
   }
 
-  // 3. Check active membership
+  // 3. Check active membership (and not blocked)
   const { data: membership } = await supabase
     .from('memberships')
-    .select('id, status')
+    .select('id, status, is_blocked')
     .eq('student_id', user.id)
     .eq('center_id', qrToken.center_id)
     .eq('status', 'active')
@@ -66,6 +66,10 @@ export async function validateAndCheckin(token: string): Promise<CheckinResult> 
 
   if (!membership) {
     return { success: false, message: 'Tu membresía no está activa. Contacta al centro.' }
+  }
+
+  if (membership.is_blocked) {
+    return { success: false, message: 'Tu acceso está bloqueado. Regularizá tu pago.' }
   }
 
   // 4. Find active class right now (±15 min window)

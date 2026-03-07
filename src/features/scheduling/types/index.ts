@@ -31,6 +31,18 @@ export interface Holiday {
   created_at: string
 }
 
+export interface CalendarClass {
+  id: string
+  scheduled_date: string
+  start_time: string
+  end_time: string
+  room: string | null
+  is_cancelled: boolean
+  max_capacity: number
+  disciplines: { name: string; color: string } | null
+  profiles: { full_name: string } | null
+}
+
 export interface NewTemplateInput {
   discipline_id: string
   teacher_id: string
