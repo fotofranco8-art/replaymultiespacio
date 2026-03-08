@@ -41,13 +41,13 @@ export function PaymentsPageClient({ payments, summary, students }: Props) {
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white">Caja</h1>
           <p className="text-sm text-white/50 mt-0.5 capitalize">{today}</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2">
           {payments.length > 0 && (
             <>
               <button
@@ -81,7 +81,8 @@ export function PaymentsPageClient({ payments, summary, students }: Props) {
         {payments.length === 0 ? (
           <p className="text-sm text-white/40 py-6 text-center">Sin pagos registrados hoy.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[520px]">
             <thead>
               <tr className="text-left border-b border-white/10">
                 <th className="pb-3 font-medium text-white/50">Alumno</th>
@@ -134,6 +135,7 @@ export function PaymentsPageClient({ payments, summary, students }: Props) {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
