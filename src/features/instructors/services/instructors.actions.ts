@@ -36,10 +36,13 @@ export async function inviteInstructor(input: NewInstructorInput) {
   })
 
   if (error) {
-    if (error.message?.includes('rate limit') || error.status === 429) {
+    if (error.status === 429 || error.message?.includes('rate limit')) {
       throw new Error('Límite de emails alcanzado. Esperá unos minutos e intentá de nuevo.')
     }
-    throw error
+    if (error.status === 422 || error.message?.includes('already been registered')) {
+      throw new Error('Este email ya está registrado en el sistema.')
+    }
+    throw new Error(error.message ?? 'Error al invitar instructor')
   }
 
   // Upsert profile manually as backup in case the DB trigger didn't run

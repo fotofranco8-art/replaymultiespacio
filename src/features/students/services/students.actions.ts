@@ -78,10 +78,13 @@ export async function inviteStudent(input: NewStudentInput) {
   )
 
   if (inviteError) {
-    if (inviteError.message?.includes('rate limit') || inviteError.status === 429) {
+    if (inviteError.status === 429 || inviteError.message?.includes('rate limit')) {
       throw new Error('Límite de emails alcanzado. Esperá unos minutos e intentá de nuevo.')
     }
-    throw inviteError
+    if (inviteError.status === 422 || inviteError.message?.includes('already been registered')) {
+      throw new Error('Este email ya está registrado en el sistema.')
+    }
+    throw new Error(inviteError.message ?? 'Error al invitar alumno')
   }
 
   const studentId = invited.user.id
