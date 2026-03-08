@@ -2,6 +2,6 @@ import { getInstructors } from '@/features/instructors/services/instructors.acti
 import { InstructorsPageClient } from './InstructorsPageClient'
 
 export default async function InstructorsPage() {
-  const instructors = await getInstructors()
+  const instructors = await getInstructors().catch(() => [])
   return <InstructorsPageClient instructors={instructors} />
 }
