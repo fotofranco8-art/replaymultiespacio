@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { registerPayment } from '../services/payments.actions'
 
 interface Student {
@@ -37,9 +38,12 @@ export function PaymentForm({ students, onClose }: Props) {
           method,
           notes: data.get('notes') as string || undefined,
         })
+        toast.success('Pago registrado exitosamente')
         onClose()
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Error al registrar pago')
+        const msg = e instanceof Error ? e.message : 'Error al registrar pago'
+        setError(msg)
+        toast.error(msg)
       }
     })
   }

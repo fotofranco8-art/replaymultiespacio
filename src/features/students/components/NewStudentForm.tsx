@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { inviteStudent } from '../services/students.actions'
 import type { Discipline } from '@/features/scheduling/types'
 
@@ -31,9 +32,12 @@ export function NewStudentForm({ disciplines, onClose }: Props) {
         monthly_fee: Number(data.get('monthly_fee')),
         classes_per_month: Number(data.get('classes_per_month')),
       })
+      toast.success('Invitación enviada exitosamente')
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al crear alumno')
+      const msg = err instanceof Error ? err.message : 'Error al crear alumno'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }

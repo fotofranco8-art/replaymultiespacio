@@ -1,6 +1,5 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMyProfile } from '@/lib/supabase/profile-helper'
 import { revalidatePath } from 'next/cache'
@@ -46,9 +45,8 @@ export async function inviteStudent(input: NewStudentInput) {
   if (inviteError) throw inviteError
 
   const studentId = invited.user.id
-  const supabase = await createClient()
 
-  const { error: membershipError } = await supabase.from('memberships').insert({
+  const { error: membershipError } = await admin.from('memberships').insert({
     student_id: studentId,
     center_id: profile.center_id,
     discipline_id: input.discipline_id || null,
@@ -61,7 +59,7 @@ export async function inviteStudent(input: NewStudentInput) {
 
   if (membershipError) throw membershipError
 
-  await supabase.from('recovery_balance').insert({
+  await admin.from('recovery_balance').insert({
     student_id: studentId,
     center_id: profile.center_id,
     balance: 0,
@@ -71,7 +69,7 @@ export async function inviteStudent(input: NewStudentInput) {
 }
 
 export async function toggleStudentStatus(studentId: string, isActive: boolean) {
-  const supabase = await createClient()
-  await supabase.from('profiles').update({ is_active: isActive }).eq('id', studentId)
+  const admin = createAdminClient()
+  await admin.from('profiles').update({ is_active: isActive }).eq('id', studentId)
   revalidatePath('/admin/students')
 }

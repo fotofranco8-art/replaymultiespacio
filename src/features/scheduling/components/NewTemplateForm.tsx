@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { createClassTemplate } from '../services/scheduling.actions'
 import type { Discipline } from '../types'
 import { DAY_NAMES } from '../types'
@@ -36,9 +37,12 @@ export function NewTemplateForm({ disciplines, teachers, onClose }: Props) {
           room: data.get('room') as string || undefined,
           max_capacity: Number(data.get('max_capacity')) || 20,
         })
+        toast.success('Plantilla creada exitosamente')
         onClose()
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Error al crear plantilla')
+        const msg = e instanceof Error ? e.message : 'Error al crear plantilla'
+        setError(msg)
+        toast.error(msg)
       }
     })
   }

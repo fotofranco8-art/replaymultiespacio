@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { WeeklyTemplateGrid } from '@/features/scheduling/components/WeeklyTemplateGrid'
 import { HolidayManager } from '@/features/scheduling/components/HolidayManager'
 import { NewTemplateForm } from '@/features/scheduling/components/NewTemplateForm'
@@ -23,7 +24,6 @@ export function SchedulingPageClient({ disciplines, templates, holidays, teacher
   const [showTemplateForm, setShowTemplateForm] = useState(false)
   const [showDisciplineForm, setShowDisciplineForm] = useState(false)
   const [projecting, startProjection] = useTransition()
-  const [projResult, setProjResult] = useState<string | null>(null)
 
   // Discipline form state
   const [discName, setDiscName] = useState('')
@@ -35,9 +35,9 @@ export function SchedulingPageClient({ disciplines, templates, holidays, teacher
     startProjection(async () => {
       try {
         await projectMonth(now.getFullYear(), now.getMonth() + 1)
-        setProjResult('Mes proyectado exitosamente')
+        toast.success('Mes proyectado exitosamente')
       } catch (e) {
-        setProjResult(e instanceof Error ? e.message : 'Error al proyectar')
+        toast.error(e instanceof Error ? e.message : 'Error al proyectar')
       }
     })
   }
@@ -127,11 +127,6 @@ export function SchedulingPageClient({ disciplines, templates, holidays, teacher
               </button>
             </div>
           </div>
-          {projResult && (
-            <div className="mb-4 px-4 py-2 bg-green-50 text-green-700 text-sm rounded-lg">
-              {projResult}
-            </div>
-          )}
           {(disciplines.length === 0 || teachers.length === 0) && (
             <p className="text-sm text-amber-600 bg-amber-50 rounded-lg px-4 py-2 mb-4">
               {disciplines.length === 0

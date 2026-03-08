@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { addHoliday, removeHoliday } from '../services/scheduling.actions'
 import type { Holiday } from '../types'
 
@@ -22,8 +23,11 @@ export function HolidayManager({ holidays }: Props) {
         await addHoliday(date, name)
         setDate('')
         setName('')
+        toast.success('Feriado agregado')
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Error')
+        const msg = e instanceof Error ? e.message : 'Error al agregar feriado'
+        setError(msg)
+        toast.error(msg)
       }
     })
   }
@@ -69,7 +73,10 @@ export function HolidayManager({ holidays }: Props) {
                 </div>
               </div>
               <button
-                onClick={() => startTransition(() => removeHoliday(h.id))}
+                onClick={() => startTransition(async () => {
+                  await removeHoliday(h.id)
+                  toast.success('Feriado eliminado')
+                })}
                 disabled={pending}
                 className="text-xs text-white/30 hover:text-red-400 transition-colors"
               >

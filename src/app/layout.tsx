@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Space_Grotesk, Manrope, Space_Mono } from 'next/font/google'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' })
@@ -18,7 +19,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${spaceGrotesk.variable} ${manrope.variable} ${spaceMono.variable}`}>{children}</body>
+      <body className={`${spaceGrotesk.variable} ${manrope.variable} ${spaceMono.variable}`}>
+        {children}
+        <Toaster position="bottom-right" theme="dark" richColors />
+      </body>
     </html>
   )
 }
