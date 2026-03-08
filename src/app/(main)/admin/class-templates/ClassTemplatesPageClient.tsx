@@ -11,13 +11,25 @@ interface Teacher {
   full_name: string
 }
 
+interface Room {
+  id: string
+  name: string
+}
+
+interface Student {
+  id: string
+  full_name: string
+}
+
 interface Props {
   disciplines: Discipline[]
   templates: ClassTemplate[]
   teachers: Teacher[]
+  rooms: Room[]
+  students: Student[]
 }
 
-export function ClassTemplatesPageClient({ disciplines, templates, teachers }: Props) {
+export function ClassTemplatesPageClient({ disciplines, templates, teachers, rooms, students }: Props) {
   const [showTemplateForm, setShowTemplateForm] = useState(false)
   const [projecting, startProjection] = useTransition()
   const [projResult, setProjResult] = useState<string | null>(null)
@@ -84,6 +96,8 @@ export function ClassTemplatesPageClient({ disciplines, templates, teachers }: P
         <NewTemplateForm
           disciplines={disciplines}
           teachers={teachers}
+          rooms={rooms}
+          students={students}
           onClose={() => setShowTemplateForm(false)}
         />
       )}

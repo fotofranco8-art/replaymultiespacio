@@ -28,26 +28,55 @@ export async function getDisciplines(): Promise<Discipline[]> {
   return data ?? []
 }
 
-export async function createDiscipline(name: string, color: string) {
+export async function createDiscipline(input: {
+  name: string
+  color: string
+  type?: 'grupal' | 'individual'
+  monthly_price?: number
+  max_capacity?: number
+  modality?: 'anual' | 'seminario'
+  description?: string
+}) {
   const supabase = await createClient()
   const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
   const { error } = await supabase.from('disciplines').insert({
     center_id: profile.center_id,
-    name,
-    color,
+    name: input.name,
+    color: input.color,
+    type: input.type ?? 'grupal',
+    monthly_price: input.monthly_price ?? 0,
+    max_capacity: input.max_capacity ?? 20,
+    modality: input.modality ?? 'anual',
+    description: input.description ?? null,
   })
 
   if (error) throw error
   revalidateAll()
 }
 
-export async function updateDiscipline(id: string, name: string, color: string) {
+export async function updateDiscipline(id: string, input: {
+  name: string
+  color: string
+  type?: 'grupal' | 'individual'
+  monthly_price?: number
+  max_capacity?: number
+  modality?: 'anual' | 'seminario'
+  description?: string
+}) {
   const supabase = await createClient()
   const { error } = await supabase
     .from('disciplines')
-    .update({ name, color })
+    .update({
+      name: input.name,
+      color: input.color,
+      type: input.type ?? 'grupal',
+      monthly_price: input.monthly_price ?? 0,
+      max_capacity: input.max_capacity ?? 20,
+      modality: input.modality ?? 'anual',
+      description: input.description ?? null,
+    })
     .eq('id', id)
 
   if (error) throw error
@@ -85,13 +114,27 @@ export async function createClassTemplate(input: NewTemplateInput) {
   const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
-  const { error } = await supabase.from('class_templates').insert({
+  const { student_ids, ...templateData } = input
+
+  const { data, error } = await supabase.from('class_templates').insert({
     center_id: profile.center_id,
-    ...input,
-    max_capacity: input.max_capacity ?? 20,
-  })
+    ...templateData,
+    max_capacity: templateData.max_capacity ?? 20,
+  }).select('id').single()
 
   if (error) throw error
+
+  // Save assigned students
+  if (student_ids && student_ids.length > 0 && data?.id) {
+    await supabase.from('class_template_students').insert(
+      student_ids.map((student_id) => ({
+        template_id: data.id,
+        student_id,
+        center_id: profile.center_id!,
+      }))
+    )
+  }
+
   revalidateAll()
 }
 
@@ -228,6 +271,63 @@ export async function getMonthlyRevenue(): Promise<number> {
     .lt('created_at', endOfMonth)
 
   return (data ?? []).reduce((sum, p) => sum + Number(p.final_amount), 0)
+}
+
+export async function getClassesForDate(date: string): Promise<CalendarClass[]> {
+  const supabase = await createClient()
+  const profile = await getMyProfile()
+  if (!profile?.center_id) return []
+
+  const { data } = await supabase
+    .from('classes')
+    .select(`
+      id, scheduled_date, start_time, end_time, room, is_cancelled, max_capacity,
+      disciplines (name, color),
+      profiles (full_name)
+    `)
+    .eq('center_id', profile.center_id)
+    .eq('scheduled_date', date)
+    .eq('is_cancelled', false)
+    .order('start_time')
+
+  return (data ?? []) as unknown as CalendarClass[]
+}
+
+export async function createAdHocClass(input: {
+  discipline_id: string
+  teacher_id?: string
+  room?: string
+  scheduled_date: string
+  start_time: string
+  end_time: string
+  max_capacity?: number
+  student_ids?: string[]
+}) {
+  const supabase = await createClient()
+  const profile = await getMyProfile()
+  if (!profile?.center_id) throw new Error('No center found')
+
+  const { student_ids, ...classData } = input
+
+  const { data, error } = await supabase.from('classes').insert({
+    center_id: profile.center_id,
+    ...classData,
+    max_capacity: classData.max_capacity ?? 20,
+  }).select('id').single()
+
+  if (error) throw error
+
+  if (student_ids && student_ids.length > 0 && data?.id) {
+    await supabase.from('class_enrollments').insert(
+      student_ids.map((student_id) => ({
+        class_id: data.id,
+        student_id,
+        center_id: profile.center_id!,
+      }))
+    )
+  }
+
+  revalidateAll()
 }
 
 export async function getTeacherAlerts() {

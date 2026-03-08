@@ -4,6 +4,10 @@ export interface Discipline {
   name: string
   description: string | null
   color: string
+  type: 'grupal' | 'individual'
+  monthly_price: number
+  max_capacity: number
+  modality: 'anual' | 'seminario'
   is_active: boolean
   created_at: string
 }
@@ -21,6 +25,7 @@ export interface ClassTemplate {
   is_active: boolean
   disciplines?: { name: string; color: string }
   profiles?: { full_name: string }
+  student_ids?: string[]
 }
 
 export interface Holiday {
@@ -51,6 +56,8 @@ export interface NewTemplateInput {
   end_time: string
   room?: string
   max_capacity?: number
+  student_ids?: string[]
 }
 
 export const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab']
+export const DAY_NAMES_FULL = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']

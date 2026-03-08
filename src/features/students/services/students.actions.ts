@@ -3,17 +3,16 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMyProfile } from '@/lib/supabase/profile-helper'
 import { revalidatePath } from 'next/cache'
-import type { NewStudentInput, StudentWithMembership } from '../types'
+import type { NewStudentInput, StudentWithMembership, UpdateStudentInput } from '../types'
 
 export async function getStudents(): Promise<StudentWithMembership[]> {
   const admin = createAdminClient()
   const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
-  // Step 1: get student profiles
   const { data: students, error: studentsError } = await admin
     .from('profiles')
-    .select('id, full_name, email, phone, is_active, center_id, created_at')
+    .select('id, full_name, email, phone, legajo, is_active, center_id, created_at')
     .eq('role', 'student')
     .eq('center_id', profile.center_id)
     .order('full_name')
@@ -23,7 +22,6 @@ export async function getStudents(): Promise<StudentWithMembership[]> {
   }
   if (!students?.length) return []
 
-  // Step 2: get memberships (no nested join needed)
   const studentIds = students.map((s) => s.id)
   const { data: memberships, error: membershipsError } = await admin
     .from('memberships')
@@ -34,29 +32,47 @@ export async function getStudents(): Promise<StudentWithMembership[]> {
     return students.map((s) => ({ ...s, memberships: [] })) as unknown as StudentWithMembership[]
   }
 
-  // Step 3: get discipline names for the discipline_ids found
   const disciplineIds = [...new Set((memberships ?? []).map((m) => m.discipline_id).filter(Boolean))]
-  const disciplineMap: Record<string, string> = {}
+  const disciplineMap: Record<string, { name: string; color: string; modality: string }> = {}
   if (disciplineIds.length > 0) {
     const { data: disciplines } = await admin
       .from('disciplines')
-      .select('id, name')
+      .select('id, name, color, modality')
       .in('id', disciplineIds)
     for (const d of disciplines ?? []) {
-      disciplineMap[d.id] = d.name
+      disciplineMap[d.id] = { name: d.name, color: d.color, modality: d.modality ?? 'anual' }
     }
   }
 
-  // Merge
   return students.map((s) => ({
     ...s,
     memberships: (memberships ?? [])
       .filter((m) => m.student_id === s.id)
       .map((m) => ({
         ...m,
-        disciplines: m.discipline_id ? { name: disciplineMap[m.discipline_id] ?? '' } : null,
+        disciplines: m.discipline_id ? disciplineMap[m.discipline_id] ?? null : null,
       })),
   })) as unknown as StudentWithMembership[]
+}
+
+export async function getStudentWithDetails(studentId: string) {
+  const admin = createAdminClient()
+  const { data: student } = await admin
+    .from('profiles')
+    .select('id, full_name, email, phone, legajo, is_active')
+    .eq('id', studentId)
+    .single()
+
+  const { data: memberships } = await admin
+    .from('memberships')
+    .select('discipline_id')
+    .eq('student_id', studentId)
+    .eq('status', 'active')
+
+  return {
+    ...student,
+    discipline_ids: (memberships ?? []).map((m) => m.discipline_id).filter(Boolean) as string[],
+  }
 }
 
 export async function inviteStudent(input: NewStudentInput) {
@@ -64,7 +80,6 @@ export async function inviteStudent(input: NewStudentInput) {
   const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
-  // Invite user via email — triggers auto-profile creation via DB trigger
   const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
     input.email,
     {
@@ -89,7 +104,6 @@ export async function inviteStudent(input: NewStudentInput) {
 
   const studentId = invited.user.id
 
-  // Upsert profile manually as backup in case the DB trigger didn't run
   await admin.from('profiles').upsert({
     id: studentId,
     center_id: profile.center_id,
@@ -97,27 +111,86 @@ export async function inviteStudent(input: NewStudentInput) {
     full_name: input.full_name,
     email: input.email,
     phone: input.phone ?? null,
+    legajo: input.legajo ?? null,
     is_active: true,
   }, { onConflict: 'id' })
 
-  const { error: membershipError } = await admin.from('memberships').insert({
-    student_id: studentId,
-    center_id: profile.center_id,
-    discipline_id: input.discipline_id || null,
-    plan_name: input.plan_name,
-    monthly_fee: input.monthly_fee,
-    classes_per_month: input.classes_per_month,
-    status: 'active',
-    start_date: new Date().toISOString().split('T')[0],
-  })
+  // Fetch discipline prices and create one membership per discipline
+  if (input.discipline_ids.length > 0) {
+    const { data: disciplines } = await admin
+      .from('disciplines')
+      .select('id, name, monthly_price')
+      .in('id', input.discipline_ids)
 
-  if (membershipError) throw membershipError
+    const disciplineMap = Object.fromEntries((disciplines ?? []).map((d) => [d.id, d]))
+
+    await admin.from('memberships').insert(
+      input.discipline_ids.map((discipline_id) => {
+        const disc = disciplineMap[discipline_id]
+        return {
+          student_id: studentId,
+          center_id: profile.center_id!,
+          discipline_id,
+          plan_name: disc?.name ?? 'Plan Mensual',
+          monthly_fee: disc?.monthly_price ?? 0,
+          classes_per_month: null,
+          status: 'active',
+          start_date: new Date().toISOString().split('T')[0],
+        }
+      })
+    )
+  }
 
   await admin.from('recovery_balance').insert({
     student_id: studentId,
     center_id: profile.center_id,
     balance: 0,
   })
+
+  revalidatePath('/admin/students')
+}
+
+export async function updateStudent(studentId: string, input: UpdateStudentInput) {
+  const admin = createAdminClient()
+  const profile = await getMyProfile()
+  if (!profile?.center_id) throw new Error('No center found')
+
+  await admin.from('profiles').update({
+    full_name: input.full_name,
+    phone: input.phone ?? null,
+    legajo: input.legajo ?? null,
+  }).eq('id', studentId)
+
+  // Re-sync memberships: delete existing active ones and re-create
+  await admin.from('memberships')
+    .update({ status: 'expired' })
+    .eq('student_id', studentId)
+    .eq('status', 'active')
+
+  if (input.discipline_ids.length > 0) {
+    const { data: disciplines } = await admin
+      .from('disciplines')
+      .select('id, name, monthly_price')
+      .in('id', input.discipline_ids)
+
+    const disciplineMap = Object.fromEntries((disciplines ?? []).map((d) => [d.id, d]))
+
+    await admin.from('memberships').insert(
+      input.discipline_ids.map((discipline_id) => {
+        const disc = disciplineMap[discipline_id]
+        return {
+          student_id: studentId,
+          center_id: profile.center_id!,
+          discipline_id,
+          plan_name: disc?.name ?? 'Plan Mensual',
+          monthly_fee: disc?.monthly_price ?? 0,
+          classes_per_month: null,
+          status: 'active',
+          start_date: new Date().toISOString().split('T')[0],
+        }
+      })
+    )
+  }
 
   revalidatePath('/admin/students')
 }
@@ -142,10 +215,7 @@ export async function bulkInviteStudents(
         full_name: student.full_name,
         email: student.email,
         phone: student.phone,
-        discipline_id: '',
-        plan_name: 'Plan Mensual',
-        monthly_fee: 0,
-        classes_per_month: 8,
+        discipline_ids: [],
       })
       results.success++
     } catch (e) {

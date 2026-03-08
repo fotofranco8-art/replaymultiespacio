@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMyProfile } from '@/lib/supabase/profile-helper'
 import { revalidatePath } from 'next/cache'
-import type { Instructor, NewInstructorInput } from '../types'
+import type { Instructor, NewInstructorInput, UpdateInstructorInput } from '../types'
 
 export async function getInstructors(): Promise<Instructor[]> {
   const supabase = await createClient()
@@ -13,12 +13,15 @@ export async function getInstructors(): Promise<Instructor[]> {
 
   const { data } = await supabase
     .from('profiles')
-    .select('id, full_name, email, phone, is_active, created_at')
+    .select('id, full_name, email, phone, specialties, is_active, created_at')
     .eq('center_id', profile.center_id)
     .eq('role', 'teacher')
     .order('full_name')
 
-  return (data ?? []) as Instructor[]
+  return (data ?? []).map((d) => ({
+    ...d,
+    specialties: d.specialties ?? [],
+  })) as Instructor[]
 }
 
 export async function inviteInstructor(input: NewInstructorInput) {
@@ -45,7 +48,6 @@ export async function inviteInstructor(input: NewInstructorInput) {
     throw new Error(error.message ?? 'Error al invitar instructor')
   }
 
-  // Upsert profile manually as backup in case the DB trigger didn't run
   await admin.from('profiles').upsert({
     id: invited.user.id,
     center_id: profile.center_id,
@@ -53,9 +55,20 @@ export async function inviteInstructor(input: NewInstructorInput) {
     full_name: input.full_name,
     email: input.email,
     phone: input.phone ?? null,
+    specialties: input.specialties ?? [],
     is_active: true,
   }, { onConflict: 'id' })
 
+  revalidatePath('/admin/instructors')
+}
+
+export async function updateInstructor(instructorId: string, input: UpdateInstructorInput) {
+  const admin = createAdminClient()
+  await admin.from('profiles').update({
+    full_name: input.full_name,
+    phone: input.phone ?? null,
+    specialties: input.specialties ?? [],
+  }).eq('id', instructorId)
   revalidatePath('/admin/instructors')
 }
 

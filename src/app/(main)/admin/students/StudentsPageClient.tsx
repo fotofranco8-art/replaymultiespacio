@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { StudentTable } from '@/features/students/components/StudentTable'
 import { NewStudentForm } from '@/features/students/components/NewStudentForm'
+import { EditStudentModal } from '@/features/students/components/EditStudentModal'
 import { BulkImportModal } from '@/features/students/components/BulkImportModal'
 import type { StudentWithMembership } from '@/features/students/types'
 import type { Discipline } from '@/features/scheduling/types'
@@ -16,10 +17,13 @@ interface Props {
 export function StudentsPageClient({ students, disciplines }: Props) {
   const [showForm, setShowForm] = useState(false)
   const [showBulk, setShowBulk] = useState(false)
+  const [editingStudent, setEditingStudent] = useState<StudentWithMembership | null>(null)
   const [search, setSearch] = useState('')
 
   const filtered = students.filter((s) =>
-    s.full_name?.toLowerCase().includes(search.toLowerCase())
+    s.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+    s.email?.toLowerCase().includes(search.toLowerCase()) ||
+    s.legajo?.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
@@ -47,25 +51,19 @@ export function StudentsPageClient({ students, disciplines }: Props) {
       </div>
 
       {/* Search bar */}
-      <div className="flex gap-3 mb-4">
+      <div className="mb-4">
         <input
           type="text"
-          placeholder="Buscar alumno..."
+          placeholder="Buscar por nombre, email o legajo..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 border border-white/10 rounded-lg px-4 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full border border-white/10 rounded-lg px-4 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
           style={{ background: 'rgba(255,255,255,0.05)' }}
         />
-        <button
-          className="px-4 py-2 rounded-lg border border-white/10 text-sm transition-colors hover:bg-white/5"
-          style={{ color: '#C4B5D4' }}
-        >
-          Filtros
-        </button>
       </div>
 
       <div className="rounded-xl border border-white/10 p-6" style={{ background: 'rgba(255,255,255,0.04)' }}>
-        <StudentTable students={filtered} />
+        <StudentTable students={filtered} onEdit={setEditingStudent} />
       </div>
 
       <AnimatePresence>
@@ -73,6 +71,15 @@ export function StudentsPageClient({ students, disciplines }: Props) {
           <NewStudentForm
             disciplines={disciplines}
             onClose={() => setShowForm(false)}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {editingStudent && (
+          <EditStudentModal
+            student={editingStudent}
+            disciplines={disciplines}
+            onClose={() => setEditingStudent(null)}
           />
         )}
       </AnimatePresence>

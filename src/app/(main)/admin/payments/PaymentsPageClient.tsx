@@ -28,10 +28,10 @@ export function PaymentsPageClient({ payments, summary, students }: Props) {
     const rows = payments.map((p) => ({
       Fecha: new Date(p.created_at).toLocaleDateString('es-AR'),
       Hora: new Date(p.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
-      Alumno: p.profiles?.full_name ?? '',
+      Tipo: p.payment_type === 'product' ? 'Producto' : 'Alumno',
+      Concepto: p.payment_type === 'product' ? (p.product_name ?? '') : (p.profiles?.full_name ?? ''),
       Método: p.method === 'cash' ? 'Efectivo' : 'Transferencia',
       'Monto base': Number(p.amount),
-      Recargo: p.method === 'transfer' ? Number(p.final_amount) - Number(p.amount) : 0,
       Total: Number(p.final_amount),
     }))
     const ws = utils.json_to_sheet(rows)
@@ -82,59 +82,65 @@ export function PaymentsPageClient({ payments, summary, students }: Props) {
           <p className="text-sm text-white/40 py-6 text-center">Sin pagos registrados hoy.</p>
         ) : (
           <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[520px]">
-            <thead>
-              <tr className="text-left border-b border-white/10">
-                <th className="pb-3 font-medium text-white/50">Alumno</th>
-                <th className="pb-3 font-medium text-white/50">Método</th>
-                <th className="pb-3 font-medium text-white/50 text-right">Monto base</th>
-                <th className="pb-3 font-medium text-white/50 text-right">Recargo?</th>
-                <th className="pb-3 font-medium text-white/50 text-right">Total</th>
-                <th className="pb-3 font-medium text-white/50">Hora</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {payments.map((p) => (
-                <tr key={p.id} className="hover:bg-white/5 transition-colors">
-                  <td className="py-3 font-medium text-white">
-                    {p.profiles?.full_name ?? '—'}
-                  </td>
-                  <td className="py-3">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        p.method === 'cash'
-                          ? 'bg-green-500/20 text-green-400'
-                          : 'bg-blue-500/20 text-blue-400'
-                      }`}
-                    >
-                      {p.method === 'cash' ? 'Efectivo' : 'Transferencia'}
-                    </span>
-                  </td>
-                  <td className="py-3 text-right text-white/60">
-                    ${Number(p.amount).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
-                  </td>
-                  <td className="py-3 text-right">
-                    {p.method === 'transfer' ? (
-                      <span className="text-xs text-amber-400 font-medium">
-                        +${(Number(p.final_amount) - Number(p.amount)).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
-                      </span>
-                    ) : (
-                      <span className="text-white/30">—</span>
-                    )}
-                  </td>
-                  <td className="py-3 text-right font-semibold text-white">
-                    ${Number(p.final_amount).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
-                  </td>
-                  <td className="py-3 text-white/40">
-                    {new Date(p.created_at).toLocaleTimeString('es-AR', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </td>
+            <table className="w-full text-sm min-w-[580px]">
+              <thead>
+                <tr className="text-left border-b border-white/10">
+                  <th className="pb-3 font-medium text-white/50">Tipo</th>
+                  <th className="pb-3 font-medium text-white/50">Concepto</th>
+                  <th className="pb-3 font-medium text-white/50">Método</th>
+                  <th className="pb-3 font-medium text-white/50 text-right">Base</th>
+                  <th className="pb-3 font-medium text-white/50 text-right">Total</th>
+                  <th className="pb-3 font-medium text-white/50">Hora</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {payments.map((p) => {
+                  const concepto = p.payment_type === 'product'
+                    ? (p.product_name ?? 'Producto')
+                    : (p.profiles?.full_name ?? '—')
+
+                  return (
+                    <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                      <td className="py-3">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            p.payment_type === 'product'
+                              ? 'bg-white/10 text-white/60'
+                              : 'bg-purple-500/20 text-purple-400'
+                          }`}
+                        >
+                          {p.payment_type === 'product' ? '🛍️ Producto' : '🎓 Alumno'}
+                        </span>
+                      </td>
+                      <td className="py-3 font-medium text-white">{concepto}</td>
+                      <td className="py-3">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            p.method === 'cash'
+                              ? 'bg-green-500/20 text-green-400'
+                              : 'bg-blue-500/20 text-blue-400'
+                          }`}
+                        >
+                          {p.method === 'cash' ? 'Efectivo' : 'Transferencia'}
+                        </span>
+                      </td>
+                      <td className="py-3 text-right text-white/60">
+                        ${Number(p.amount).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
+                      </td>
+                      <td className="py-3 text-right font-semibold text-white">
+                        ${Number(p.final_amount).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
+                      </td>
+                      <td className="py-3 text-white/40">
+                        {new Date(p.created_at).toLocaleTimeString('es-AR', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
