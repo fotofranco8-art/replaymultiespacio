@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { utils, writeFile } from 'xlsx'
 import { CashRegisterSummary } from '@/features/payments/components/CashRegisterSummary'
 import { PaymentForm } from '@/features/payments/components/PaymentForm'
+import { exportPaymentsPDF } from '@/features/payments/utils/export'
 import type { Payment, CashRegisterSummary as Summary } from '@/features/payments/types'
 
 interface Student {
@@ -47,12 +49,20 @@ export function PaymentsPageClient({ payments, summary, students }: Props) {
         </div>
         <div className="flex gap-3">
           {payments.length > 0 && (
-            <button
-              onClick={exportPayments}
-              className="px-4 py-2 rounded-lg text-sm font-medium border border-white/10 text-white/70 hover:bg-white/5 transition-colors"
-            >
-              Exportar Excel
-            </button>
+            <>
+              <button
+                onClick={() => exportPaymentsPDF(payments, summary)}
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-white/10 text-white/70 hover:bg-white/5 transition-colors"
+              >
+                Exportar PDF
+              </button>
+              <button
+                onClick={exportPayments}
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-white/10 text-white/70 hover:bg-white/5 transition-colors"
+              >
+                Exportar Excel
+              </button>
+            </>
           )}
           <button
             onClick={() => setShowForm(true)}
@@ -127,9 +137,11 @@ export function PaymentsPageClient({ payments, summary, students }: Props) {
         )}
       </div>
 
-      {showForm && (
-        <PaymentForm students={students} onClose={() => setShowForm(false)} />
-      )}
+      <AnimatePresence>
+        {showForm && (
+          <PaymentForm students={students} onClose={() => setShowForm(false)} />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -65,6 +65,11 @@ export function AgentChat() {
         body: JSON.stringify({ messages: history }),
       })
 
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(errorText || 'Error del servidor de IA')
+      }
+
       if (!response.body) throw new Error('No response body')
 
       const reader = response.body.getReader()

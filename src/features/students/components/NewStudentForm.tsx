@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { inviteStudent } from '../services/students.actions'
 import type { Discipline } from '@/features/scheduling/types'
@@ -44,8 +45,20 @@ export function NewStudentForm({ disciplines, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="rounded-2xl p-6 w-full max-w-md border border-white/10" style={{ background: '#1A0A30' }}>
+    <motion.div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="rounded-2xl p-6 w-full max-w-md border border-white/10"
+        style={{ background: '#1A0A30' }}
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ duration: 0.15 }}
+      >
         <h2 className="text-lg font-bold text-white mb-5">Nuevo alumno</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -148,7 +161,7 @@ export function NewStudentForm({ disciplines, onClose }: Props) {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { StudentTable } from '@/features/students/components/StudentTable'
 import { NewStudentForm } from '@/features/students/components/NewStudentForm'
+import { BulkImportModal } from '@/features/students/components/BulkImportModal'
 import type { StudentWithMembership } from '@/features/students/types'
 import type { Discipline } from '@/features/scheduling/types'
 
@@ -13,6 +15,7 @@ interface Props {
 
 export function StudentsPageClient({ students, disciplines }: Props) {
   const [showForm, setShowForm] = useState(false)
+  const [showBulk, setShowBulk] = useState(false)
   const [search, setSearch] = useState('')
 
   const filtered = students.filter((s) =>
@@ -26,13 +29,21 @@ export function StudentsPageClient({ students, disciplines }: Props) {
           <h1 className="text-2xl font-bold text-white">Alumnos</h1>
           <p className="text-sm text-white/50 mt-0.5">{students.length} registrados</p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-80"
-          style={{ background: 'linear-gradient(135deg, #A855F7, #6366F1)' }}
-        >
-          + Nuevo alumno
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowBulk(true)}
+            className="px-4 py-2 rounded-lg text-sm font-medium border border-white/10 text-white/70 hover:bg-white/5 transition-colors"
+          >
+            Importar Excel
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-80"
+            style={{ background: 'linear-gradient(135deg, #A855F7, #6366F1)' }}
+          >
+            + Nuevo alumno
+          </button>
+        </div>
       </div>
 
       {/* Search bar */}
@@ -57,12 +68,19 @@ export function StudentsPageClient({ students, disciplines }: Props) {
         <StudentTable students={filtered} />
       </div>
 
-      {showForm && (
-        <NewStudentForm
-          disciplines={disciplines}
-          onClose={() => setShowForm(false)}
-        />
-      )}
+      <AnimatePresence>
+        {showForm && (
+          <NewStudentForm
+            disciplines={disciplines}
+            onClose={() => setShowForm(false)}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showBulk && (
+          <BulkImportModal onClose={() => setShowBulk(false)} />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

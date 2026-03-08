@@ -127,3 +127,33 @@ export async function toggleStudentStatus(studentId: string, isActive: boolean) 
   await admin.from('profiles').update({ is_active: isActive }).eq('id', studentId)
   revalidatePath('/admin/students')
 }
+
+export async function bulkInviteStudents(
+  students: Array<{ full_name: string; email: string; phone?: string }>
+): Promise<{ success: number; errors: string[] }> {
+  const profile = await getMyProfile()
+  if (!profile?.center_id) throw new Error('No se pudo obtener el centro')
+
+  const results = { success: 0, errors: [] as string[] }
+
+  for (const student of students) {
+    try {
+      await inviteStudent({
+        full_name: student.full_name,
+        email: student.email,
+        phone: student.phone,
+        discipline_id: '',
+        plan_name: 'Plan Mensual',
+        monthly_fee: 0,
+        classes_per_month: 8,
+      })
+      results.success++
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Error desconocido'
+      results.errors.push(`${student.email}: ${msg}`)
+    }
+  }
+
+  revalidatePath('/admin/students')
+  return results
+}

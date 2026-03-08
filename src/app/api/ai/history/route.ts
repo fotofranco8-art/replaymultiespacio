@@ -1,14 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
-
-const CENTER_ID = '00000000-0000-0000-0000-000000000001'
+import { getProfile } from '@/features/auth/services/auth.actions'
 
 export async function GET() {
   const supabase = await createClient()
+  const profile = await getProfile()
+  const centerId = profile?.center_id
+
+  if (!centerId) return Response.json([])
 
   const { data, error } = await supabase
     .from('ai_messages')
     .select('id, role, content, created_at')
-    .eq('center_id', CENTER_ID)
+    .eq('center_id', centerId)
     .order('created_at', { ascending: true })
     .limit(50)
 

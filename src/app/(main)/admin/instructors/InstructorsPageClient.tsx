@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
 import {
   inviteInstructor,
   toggleInstructorStatus,
@@ -9,6 +11,15 @@ import type { Instructor } from '@/features/instructors/types'
 
 interface Props {
   instructors: Instructor[]
+}
+
+const listContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.05 } },
+}
+const listItem = {
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
 }
 
 export function InstructorsPageClient({ instructors }: Props) {
@@ -29,8 +40,11 @@ export function InstructorsPageClient({ instructors }: Props) {
         setEmail('')
         setPhone('')
         setShowForm(false)
+        toast.success('Instructor invitado correctamente')
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error al invitar instructor')
+        const msg = err instanceof Error ? err.message : 'Error al invitar instructor'
+        setError(msg)
+        toast.error(msg)
       }
     })
   }
@@ -57,7 +71,12 @@ export function InstructorsPageClient({ instructors }: Props) {
         </div>
       ) : (
         <div className="rounded-xl border border-white/10 overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
-          <ul className="divide-y divide-white/5">
+          <motion.ul
+            className="divide-y divide-white/5"
+            variants={listContainer}
+            initial="hidden"
+            animate="visible"
+          >
             {instructors.map((inst) => {
               const initials = (inst.full_name ?? '?')
                 .split(' ')
@@ -67,7 +86,7 @@ export function InstructorsPageClient({ instructors }: Props) {
                 .toUpperCase()
 
               return (
-                <li key={inst.id} className="flex items-center gap-4 px-6 py-4">
+                <motion.li key={inst.id} variants={listItem} className="flex items-center gap-4 px-6 py-4">
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
                     style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
@@ -99,70 +118,85 @@ export function InstructorsPageClient({ instructors }: Props) {
                   >
                     {inst.is_active ? 'Desactivar' : 'Activar'}
                   </button>
-                </li>
+                </motion.li>
               )
             })}
-          </ul>
+          </motion.ul>
         </div>
       )}
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="rounded-2xl p-8 w-full max-w-md border border-white/10" style={{ background: '#1A0A30' }}>
-            <h2 className="text-lg font-bold text-white mb-6">Invitar instructor</h2>
-            <form onSubmit={handleInvite} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-white/60 mb-1">Nombre completo</label>
-                <input
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  style={{ background: 'rgba(255,255,255,0.07)' }}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-white/60 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  style={{ background: 'rgba(255,255,255,0.07)' }}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-white/60 mb-1">Teléfono (opcional)</label>
-                <input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  style={{ background: 'rgba(255,255,255,0.07)' }}
-                />
-              </div>
-              {error && <p className="text-sm text-red-400">{error}</p>}
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => { setShowForm(false); setError(null) }}
-                  className="flex-1 border border-white/10 text-white/60 px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/5 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={pending}
-                  className="flex-1 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-opacity hover:opacity-80"
-                  style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
-                >
-                  {pending ? 'Invitando...' : 'Invitar'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={(e) => { if (e.target === e.currentTarget) { setShowForm(false); setError(null) } }}
+          >
+            <motion.div
+              className="rounded-2xl p-8 w-full max-w-md border border-white/10"
+              style={{ background: '#1A0A30' }}
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.15 }}
+            >
+              <h2 className="text-lg font-bold text-white mb-6">Invitar instructor</h2>
+              <form onSubmit={handleInvite} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-white/60 mb-1">Nombre completo</label>
+                  <input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    style={{ background: 'rgba(255,255,255,0.07)' }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-white/60 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    style={{ background: 'rgba(255,255,255,0.07)' }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-white/60 mb-1">Teléfono (opcional)</label>
+                  <input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    style={{ background: 'rgba(255,255,255,0.07)' }}
+                  />
+                </div>
+                {error && <p className="text-sm text-red-400">{error}</p>}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => { setShowForm(false); setError(null) }}
+                    className="flex-1 border border-white/10 text-white/60 px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/5 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={pending}
+                    className="flex-1 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-opacity hover:opacity-80"
+                    style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
+                  >
+                    {pending ? 'Invitando...' : 'Invitar'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
