@@ -17,7 +17,10 @@ export async function getStudents(): Promise<StudentWithMembership[]> {
     .eq('role', 'student')
     .eq('center_id', profile.center_id)
     .order('full_name')
-  if (studentsError) throw studentsError
+  if (studentsError) {
+    console.error('[getStudents] profiles error:', JSON.stringify(studentsError))
+    return []
+  }
   if (!students?.length) return []
 
   // Step 2: get memberships (no nested join needed)
@@ -26,7 +29,10 @@ export async function getStudents(): Promise<StudentWithMembership[]> {
     .from('memberships')
     .select('id, student_id, plan_name, monthly_fee, classes_per_month, status, discipline_id')
     .in('student_id', studentIds)
-  if (membershipsError) throw membershipsError
+  if (membershipsError) {
+    console.error('[getStudents] memberships error:', JSON.stringify(membershipsError))
+    return students.map((s) => ({ ...s, memberships: [] })) as unknown as StudentWithMembership[]
+  }
 
   // Step 3: get discipline names for the discipline_ids found
   const disciplineIds = [...new Set((memberships ?? []).map((m) => m.discipline_id).filter(Boolean))]
