@@ -59,7 +59,7 @@ export function InstructorsPageClient({ instructors }: Props) {
         <div className="rounded-xl border border-white/10 overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
           <ul className="divide-y divide-white/5">
             {instructors.map((inst) => {
-              const initials = inst.full_name
+              const initials = (inst.full_name ?? '?')
                 .split(' ')
                 .slice(0, 2)
                 .map((n) => n[0])
