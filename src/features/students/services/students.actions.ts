@@ -81,6 +81,17 @@ export async function inviteStudent(input: NewStudentInput) {
 
   const studentId = invited.user.id
 
+  // Upsert profile manually as backup in case the DB trigger didn't run
+  await admin.from('profiles').upsert({
+    id: studentId,
+    center_id: profile.center_id,
+    role: 'student',
+    full_name: input.full_name,
+    email: input.email,
+    phone: input.phone ?? null,
+    is_active: true,
+  }, { onConflict: 'id' })
+
   const { error: membershipError } = await admin.from('memberships').insert({
     student_id: studentId,
     center_id: profile.center_id,
