@@ -26,7 +26,7 @@ export async function inviteInstructor(input: NewInstructorInput) {
   const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
-  const { error } = await admin.auth.admin.inviteUserByEmail(input.email, {
+  const { data: invited, error } = await admin.auth.admin.inviteUserByEmail(input.email, {
     data: {
       full_name: input.full_name,
       role: 'teacher',
@@ -36,11 +36,23 @@ export async function inviteInstructor(input: NewInstructorInput) {
   })
 
   if (error) throw error
+
+  // Upsert profile manually as backup in case the DB trigger didn't run
+  await admin.from('profiles').upsert({
+    id: invited.user.id,
+    center_id: profile.center_id,
+    role: 'teacher',
+    full_name: input.full_name,
+    email: input.email,
+    phone: input.phone ?? null,
+    is_active: true,
+  }, { onConflict: 'id' })
+
   revalidatePath('/admin/instructors')
 }
 
 export async function toggleInstructorStatus(instructorId: string, isActive: boolean) {
-  const supabase = await createClient()
-  await supabase.from('profiles').update({ is_active: isActive }).eq('id', instructorId)
+  const admin = createAdminClient()
+  await admin.from('profiles').update({ is_active: isActive }).eq('id', instructorId)
   revalidatePath('/admin/instructors')
 }
