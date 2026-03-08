@@ -10,18 +10,47 @@ export async function getStudents(): Promise<StudentWithMembership[]> {
   const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
-  const { data, error } = await admin
+  // Step 1: get student profiles
+  const { data: students, error: studentsError } = await admin
     .from('profiles')
-    .select(`
-      id, full_name, email, phone, is_active, center_id, created_at,
-      memberships (id, plan_name, monthly_fee, classes_per_month, status, discipline_id, disciplines(name))
-    `)
+    .select('id, full_name, email, phone, is_active, center_id, created_at')
     .eq('role', 'student')
     .eq('center_id', profile.center_id)
     .order('full_name')
+  if (studentsError) throw studentsError
+  if (!students?.length) return []
 
-  if (error) throw error
-  return (data ?? []) as unknown as StudentWithMembership[]
+  // Step 2: get memberships (no nested join needed)
+  const studentIds = students.map((s) => s.id)
+  const { data: memberships, error: membershipsError } = await admin
+    .from('memberships')
+    .select('id, student_id, plan_name, monthly_fee, classes_per_month, status, discipline_id')
+    .in('student_id', studentIds)
+  if (membershipsError) throw membershipsError
+
+  // Step 3: get discipline names for the discipline_ids found
+  const disciplineIds = [...new Set((memberships ?? []).map((m) => m.discipline_id).filter(Boolean))]
+  const disciplineMap: Record<string, string> = {}
+  if (disciplineIds.length > 0) {
+    const { data: disciplines } = await admin
+      .from('disciplines')
+      .select('id, name')
+      .in('id', disciplineIds)
+    for (const d of disciplines ?? []) {
+      disciplineMap[d.id] = d.name
+    }
+  }
+
+  // Merge
+  return students.map((s) => ({
+    ...s,
+    memberships: (memberships ?? [])
+      .filter((m) => m.student_id === s.id)
+      .map((m) => ({
+        ...m,
+        disciplines: m.discipline_id ? { name: disciplineMap[m.discipline_id] ?? '' } : null,
+      })),
+  })) as unknown as StudentWithMembership[]
 }
 
 export async function inviteStudent(input: NewStudentInput) {
