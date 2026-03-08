@@ -35,7 +35,12 @@ export async function inviteInstructor(input: NewInstructorInput) {
     },
   })
 
-  if (error) throw error
+  if (error) {
+    if (error.message?.includes('rate limit') || error.status === 429) {
+      throw new Error('Límite de emails alcanzado. Esperá unos minutos e intentá de nuevo.')
+    }
+    throw error
+  }
 
   // Upsert profile manually as backup in case the DB trigger didn't run
   await admin.from('profiles').upsert({
