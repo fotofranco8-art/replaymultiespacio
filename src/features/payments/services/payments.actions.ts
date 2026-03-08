@@ -1,12 +1,13 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getMyProfile } from '@/lib/supabase/profile-helper'
 import { revalidatePath } from 'next/cache'
 import type { NewPaymentInput, Payment, CashRegisterSummary } from '../types'
 
 export async function getTodayPayments(): Promise<Payment[]> {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
   const today = new Date().toISOString().split('T')[0]
@@ -50,7 +51,7 @@ export async function getCashRegisterSummary(): Promise<CashRegisterSummary> {
 
 export async function registerPayment(input: NewPaymentInput) {
   const supabase = await createClient()
-  const { data: adminProfile } = await supabase.from('profiles').select('id, center_id').single()
+  const adminProfile = await getMyProfile()
   if (!adminProfile?.center_id) throw new Error('No center found')
 
   const is_transfer = input.method === 'transfer'
@@ -92,7 +93,7 @@ export async function registerPayment(input: NewPaymentInput) {
 
 export async function getActiveStudents() {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
   const { data } = await supabase

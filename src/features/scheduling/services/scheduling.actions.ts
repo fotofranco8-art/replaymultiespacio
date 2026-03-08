@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getMyProfile } from '@/lib/supabase/profile-helper'
 import { revalidatePath } from 'next/cache'
 import type { NewTemplateInput, Discipline, ClassTemplate, Holiday, CalendarClass } from '../types'
 
@@ -15,7 +16,7 @@ function revalidateAll() {
 
 export async function getDisciplines(): Promise<Discipline[]> {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
   const { data } = await supabase
@@ -29,7 +30,7 @@ export async function getDisciplines(): Promise<Discipline[]> {
 
 export async function createDiscipline(name: string, color: string) {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
   const { error } = await supabase.from('disciplines').insert({
@@ -61,7 +62,7 @@ export async function toggleDiscipline(id: string, isActive: boolean) {
 
 export async function getClassTemplates(): Promise<ClassTemplate[]> {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
   const { data } = await supabase
@@ -81,7 +82,7 @@ export async function getClassTemplates(): Promise<ClassTemplate[]> {
 
 export async function createClassTemplate(input: NewTemplateInput) {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
   const { error } = await supabase.from('class_templates').insert({
@@ -102,7 +103,7 @@ export async function deleteClassTemplate(id: string) {
 
 export async function getHolidays(): Promise<Holiday[]> {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
   const { data } = await supabase
@@ -116,7 +117,7 @@ export async function getHolidays(): Promise<Holiday[]> {
 
 export async function addHoliday(date: string, name: string) {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
   const { error } = await supabase.from('holidays').insert({
@@ -144,7 +145,7 @@ export async function removeHoliday(id: string) {
 
 export async function getTeachers() {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
   const { data } = await supabase
@@ -160,7 +161,7 @@ export async function getTeachers() {
 
 export async function projectMonth(year: number, month: number) {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
   const { data, error } = await supabase.rpc('project_month', {
@@ -176,7 +177,7 @@ export async function projectMonth(year: number, month: number) {
 
 export async function getCalendarClasses(year: number, month: number): Promise<CalendarClass[]> {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
@@ -208,7 +209,7 @@ export async function cancelClass(classId: string) {
 
 export async function getMonthlyRevenue(): Promise<number> {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return 0
 
   const now = new Date()
@@ -231,7 +232,7 @@ export async function getMonthlyRevenue(): Promise<number> {
 
 export async function getTeacherAlerts() {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
   const today = new Date().toISOString().split('T')[0]

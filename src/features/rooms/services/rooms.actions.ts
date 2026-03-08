@@ -1,12 +1,13 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getMyProfile } from '@/lib/supabase/profile-helper'
 import { revalidatePath } from 'next/cache'
 import type { Room, NewRoomInput } from '../types'
 
 export async function getRooms(): Promise<Room[]> {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
   const { data } = await supabase
@@ -20,7 +21,7 @@ export async function getRooms(): Promise<Room[]> {
 
 export async function createRoom(input: NewRoomInput) {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
   const { error } = await supabase.from('rooms').insert({

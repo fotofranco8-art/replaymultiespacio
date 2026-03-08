@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getMyProfile } from '@/lib/supabase/profile-helper'
 import { ROLE_REDIRECTS } from '../types'
 
 export async function login(formData: FormData) {
@@ -16,11 +17,7 @@ export async function login(formData: FormData) {
     return { error: error.message }
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .single()
-
+  const profile = await getMyProfile()
   const role = profile?.role ?? 'student'
   redirect(ROLE_REDIRECTS[role as keyof typeof ROLE_REDIRECTS])
 }
@@ -38,10 +35,5 @@ export async function getSession() {
 }
 
 export async function getProfile() {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('profiles')
-    .select('*')
-    .single()
-  return data
+  return getMyProfile()
 }

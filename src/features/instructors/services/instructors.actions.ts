@@ -2,12 +2,13 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyProfile } from '@/lib/supabase/profile-helper'
 import { revalidatePath } from 'next/cache'
 import type { Instructor, NewInstructorInput } from '../types'
 
 export async function getInstructors(): Promise<Instructor[]> {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
   const { data } = await supabase
@@ -21,10 +22,8 @@ export async function getInstructors(): Promise<Instructor[]> {
 }
 
 export async function inviteInstructor(input: NewInstructorInput) {
-  const supabase = await createClient()
   const admin = createAdminClient()
-
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
   const { error } = await admin.auth.admin.inviteUserByEmail(input.email, {

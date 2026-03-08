@@ -2,15 +2,16 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyProfile } from '@/lib/supabase/profile-helper'
 import { revalidatePath } from 'next/cache'
 import type { NewStudentInput, StudentWithMembership } from '../types'
 
 export async function getStudents(): Promise<StudentWithMembership[]> {
-  const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const admin = createAdminClient()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return []
 
-  const { data, error } = await supabase
+  const { data, error } = await admin
     .from('profiles')
     .select(`
       id, full_name, email, phone, is_active, center_id, created_at,
@@ -25,10 +26,8 @@ export async function getStudents(): Promise<StudentWithMembership[]> {
 }
 
 export async function inviteStudent(input: NewStudentInput) {
-  const supabase = await createClient()
   const admin = createAdminClient()
-
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
   // Invite user via email — triggers auto-profile creation via DB trigger
@@ -46,8 +45,8 @@ export async function inviteStudent(input: NewStudentInput) {
 
   if (inviteError) throw inviteError
 
-  // Wait for trigger to create profile, then create membership
   const studentId = invited.user.id
+  const supabase = await createClient()
 
   const { error: membershipError } = await supabase.from('memberships').insert({
     student_id: studentId,
@@ -62,7 +61,6 @@ export async function inviteStudent(input: NewStudentInput) {
 
   if (membershipError) throw membershipError
 
-  // Create recovery_balance record
   await supabase.from('recovery_balance').insert({
     student_id: studentId,
     center_id: profile.center_id,

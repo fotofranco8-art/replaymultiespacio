@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { QRDisplay } from '@/features/check-in/components/QRDisplay'
 
-const CENTER_ID = '00000000-0000-0000-0000-000000000001'
+// Reception is a public kiosk page — center_id comes from env (single-tenant)
+const CENTER_ID = process.env.NEXT_PUBLIC_CENTER_ID ?? '00000000-0000-0000-0000-000000000001'
 
 async function getQRToken(): Promise<string | null> {
   const supabase = await createClient()

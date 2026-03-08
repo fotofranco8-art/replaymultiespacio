@@ -1,10 +1,10 @@
-export default function DashboardPage() {
-  return (
-    <div className="min-h-screen p-8">
-      <h1 className="text-3xl font-bold">Dashboard</h1>
-      <p className="mt-4 text-gray-600">
-        Implementa componentes desde features/dashboard/components/
-      </p>
-    </div>
-  )
+import { redirect } from 'next/navigation'
+import { getProfile } from '@/features/auth/services/auth.actions'
+import { ROLE_REDIRECTS } from '@/features/auth/types'
+
+export default async function DashboardPage() {
+  const profile = await getProfile()
+  if (!profile) redirect('/login')
+  const role = profile.role ?? 'student'
+  redirect(ROLE_REDIRECTS[role as keyof typeof ROLE_REDIRECTS])
 }

@@ -10,7 +10,7 @@ export default async function TeacherProfilePage() {
 
   return (
     <TeacherProfileClient
-      fullName={profile.full_name}
+      fullName={profile.full_name ?? ''}
       phone={profile.phone}
       disciplines={disciplines}
     />

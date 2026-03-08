@@ -5,8 +5,6 @@ import { agentTools } from '@/features/ai/tools/agent-tools'
 import { createClient } from '@/lib/supabase/server'
 import { getProfile } from '@/features/auth/services/auth.actions'
 
-const CENTER_ID = '00000000-0000-0000-0000-000000000001'
-
 interface SimpleMessage {
   role: 'user' | 'assistant'
   content: string
@@ -17,11 +15,12 @@ export async function POST(req: Request) {
 
   const supabase = await createClient()
   const profile = await getProfile()
+  const centerId = profile?.center_id
 
   const lastUser = messages.at(-1)
-  if (lastUser?.role === 'user') {
+  if (lastUser?.role === 'user' && centerId) {
     await supabase.from('ai_messages').insert({
-      center_id: CENTER_ID,
+      center_id: centerId,
       role: 'user',
       content: lastUser.content,
     })
@@ -41,9 +40,9 @@ mostrá un resumen claro y pedí confirmación explícita del admin.`
   }
 
   const saveText = async (text: string) => {
-    if (text) {
+    if (text && centerId) {
       await supabase.from('ai_messages').insert({
-        center_id: CENTER_ID,
+        center_id: centerId,
         role: 'assistant',
         content: text,
       })
