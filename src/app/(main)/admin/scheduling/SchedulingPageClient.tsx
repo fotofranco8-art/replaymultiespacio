@@ -45,7 +45,7 @@ export function SchedulingPageClient({ disciplines, templates, holidays, teacher
   function handleCreateDiscipline(e: React.FormEvent) {
     e.preventDefault()
     startDisc(async () => {
-      await createDiscipline(discName, discColor)
+      await createDiscipline({ name: discName, color: discColor })
       setDiscName('')
       setShowDisciplineForm(false)
     })
