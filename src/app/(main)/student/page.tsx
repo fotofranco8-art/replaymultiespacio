@@ -6,17 +6,27 @@ const REBOT_TIPS = [
   {
     emoji: '💧',
     title: 'Hidratación',
-    body: 'Tomá agua antes y después de entrenar.',
+    body: 'Las cuerdas vocales necesitan agua. Tomá agua templada antes de cantar, nunca fría.',
   },
   {
-    emoji: '😴',
-    title: 'Descanso',
-    body: 'El músculo crece mientras dormís. 7-8 hs mínimo.',
+    emoji: '🎙️',
+    title: 'Calentá la voz',
+    body: 'Nunca arranques directo. 5 min de bocinas o escalas suaves salvan tu voz.',
   },
   {
-    emoji: '🔥',
-    title: 'Constancia',
-    body: '3 veces por semana es mejor que 7 en un mes.',
+    emoji: '🧘',
+    title: 'Respiración',
+    body: 'El aire es el motor de la voz. Practicá respiración diafragmática todos los días.',
+  },
+  {
+    emoji: '🤫',
+    title: 'Descansá la voz',
+    body: 'Después de cantar mucho, el silencio es el mejor ejercicio para tus cuerdas.',
+  },
+  {
+    emoji: '🎵',
+    title: 'Entonación',
+    body: 'Cantá con una app de afinación al ensayar solo. La oreja también se entrena.',
   },
 ]
 
