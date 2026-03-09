@@ -11,6 +11,7 @@ export interface NextClass {
   disciplineColor: string
   room: string
   teacherName: string
+  checkedIn: boolean
 }
 
 export interface AttendanceHistoryItem {
@@ -57,6 +58,14 @@ export async function getNextClass(studentId: string): Promise<NextClass | null>
   const disc = Array.isArray(cls.disciplines) ? cls.disciplines[0] : cls.disciplines
   const teacher = Array.isArray(cls.profiles) ? cls.profiles[0] : cls.profiles
 
+  // Verificar si el alumno ya hizo check-in en esta clase
+  const { data: attendance } = await supabase
+    .from('attendance')
+    .select('id')
+    .eq('class_id', cls.id)
+    .eq('student_id', studentId)
+    .maybeSingle()
+
   return {
     id: cls.id,
     scheduledDate: cls.scheduled_date,
@@ -66,6 +75,7 @@ export async function getNextClass(studentId: string): Promise<NextClass | null>
     disciplineColor: (disc as { name: string; color: string } | null)?.color ?? '#A855F7',
     room: (cls.room as string | null) ?? '',
     teacherName: (teacher as { full_name: string } | null)?.full_name ?? '',
+    checkedIn: !!attendance,
   }
 }
 
@@ -83,7 +93,7 @@ export async function getAttendanceHistory(studentId: string, limit = 5): Promis
 
   const classIds = enrollments.map((e) => e.class_id)
 
-  // Paso 2: buscar clases pasadas directamente en la tabla classes
+  // Paso 2: buscar clases pasadas + hoy directamente en la tabla classes
   const { data: classes } = await supabase
     .from('classes')
     .select(`
@@ -91,7 +101,7 @@ export async function getAttendanceHistory(studentId: string, limit = 5): Promis
       disciplines (name, color)
     `)
     .in('id', classIds)
-    .lt('scheduled_date', today)
+    .lte('scheduled_date', today)
     .order('scheduled_date', { ascending: false })
     .limit(limit)
 

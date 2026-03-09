@@ -131,15 +131,29 @@ export default async function StudentPage() {
             >
               PRÓXIMA CLASE
             </span>
-            <span
-              style={{
-                background: 'rgba(255,255,255,0.08)', color: '#A1A1AA',
-                fontFamily: 'Space Mono, monospace', fontSize: 10, fontWeight: 500,
-                padding: '6px 10px', borderRadius: 20,
-              }}
-            >
-              {timeLabel}
-            </span>
+            <div className="flex items-center gap-2">
+              {nextClass.checkedIn && (
+                <span
+                  style={{
+                    background: 'rgba(34,197,94,0.15)', color: '#22c55e',
+                    fontFamily: 'Manrope, sans-serif', fontSize: 10, fontWeight: 700,
+                    padding: '6px 10px', borderRadius: 20,
+                    border: '1px solid rgba(34,197,94,0.25)',
+                  }}
+                >
+                  ✓ PRESENTE
+                </span>
+              )}
+              <span
+                style={{
+                  background: 'rgba(255,255,255,0.08)', color: '#A1A1AA',
+                  fontFamily: 'Space Mono, monospace', fontSize: 10, fontWeight: 500,
+                  padding: '6px 10px', borderRadius: 20,
+                }}
+              >
+                {timeLabel}
+              </span>
+            </div>
           </div>
 
           {/* Nombre clase */}
@@ -171,24 +185,44 @@ export default async function StudentPage() {
           )}
 
           {/* Botón check-in */}
-          <Link
-            href="/student/scan"
-            className="flex items-center justify-center"
-            style={{
-              background: '#FF2D78',
-              borderRadius: 14,
-              padding: '12px 18px',
-              gap: 8,
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="3" height="3" rx="0.5" />
-            </svg>
-            <span style={{ color: '#fff', fontFamily: 'Manrope, sans-serif', fontSize: 14, fontWeight: 700 }}>
-              Hacer Check-in
-            </span>
-          </Link>
+          {nextClass.checkedIn ? (
+            <div
+              className="flex items-center justify-center"
+              style={{
+                background: 'rgba(34,197,94,0.12)',
+                border: '1px solid rgba(34,197,94,0.25)',
+                borderRadius: 14,
+                padding: '12px 18px',
+                gap: 8,
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span style={{ color: '#22c55e', fontFamily: 'Manrope, sans-serif', fontSize: 14, fontWeight: 700 }}>
+                Asistencia registrada
+              </span>
+            </div>
+          ) : (
+            <Link
+              href="/student/scan"
+              className="flex items-center justify-center"
+              style={{
+                background: '#FF2D78',
+                borderRadius: 14,
+                padding: '12px 18px',
+                gap: 8,
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="3" height="3" rx="0.5" />
+              </svg>
+              <span style={{ color: '#fff', fontFamily: 'Manrope, sans-serif', fontSize: 14, fontWeight: 700 }}>
+                Hacer Check-in
+              </span>
+            </Link>
+          )}
         </div>
       ) : (
         <div

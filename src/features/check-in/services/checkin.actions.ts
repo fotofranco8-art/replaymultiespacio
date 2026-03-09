@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { revalidatePath } from 'next/cache'
 
 export async function getQRToken(): Promise<string | null> {
   const supabase = await createClient()
@@ -128,6 +129,9 @@ export async function validateAndCheckin(token: string): Promise<CheckinResult> 
     console.error('[checkin] attendance insert error:', JSON.stringify(error))
     return { success: false, message: `Error al registrar: ${error.message}` }
   }
+
+  // Refrescar el portal del alumno para mostrar el check-in
+  revalidatePath('/student')
 
   const disciplineName = Array.isArray(activeClass.disciplines)
     ? activeClass.disciplines[0]?.name
