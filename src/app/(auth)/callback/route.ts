@@ -5,6 +5,7 @@ import { ROLE_REDIRECTS } from '@/features/auth/types'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const type = searchParams.get('type')
   const next = searchParams.get('next') ?? '/'
 
   if (code) {
@@ -12,6 +13,11 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
+      // Primera vez: alumno invitado debe crear su contraseña
+      if (type === 'invite') {
+        return NextResponse.redirect(`${origin}/set-password`)
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
       const { data: profile } = await supabase
         .from('profiles')

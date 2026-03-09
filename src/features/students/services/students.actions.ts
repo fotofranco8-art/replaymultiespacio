@@ -85,7 +85,7 @@ export async function inviteStudent(input: NewStudentInput) {
   const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
     input.email,
     {
-      redirectTo: `${siteUrl}/callback`,
+      redirectTo: `${siteUrl}/callback?type=invite`,
       data: {
         full_name: input.full_name,
         role: 'student',
