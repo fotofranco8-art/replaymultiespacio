@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { StudentTable } from '@/features/students/components/StudentTable'
 import { NewStudentForm } from '@/features/students/components/NewStudentForm'
 import { EditStudentModal } from '@/features/students/components/EditStudentModal'
 import { BulkImportModal } from '@/features/students/components/BulkImportModal'
+import { sendInvitationsToAll } from '@/features/students/services/students.actions'
 import type { StudentWithMembership } from '@/features/students/types'
 import type { Discipline } from '@/features/scheduling/types'
 
@@ -19,6 +20,8 @@ export function StudentsPageClient({ students, disciplines }: Props) {
   const [showBulk, setShowBulk] = useState(false)
   const [editingStudent, setEditingStudent] = useState<StudentWithMembership | null>(null)
   const [search, setSearch] = useState('')
+  const [sending, startSend] = useTransition()
+  const [sendResult, setSendResult] = useState<{ sent: number; errors: string[] } | null>(null)
 
   const filtered = students.filter((s) =>
     s.full_name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -46,6 +49,19 @@ export function StudentsPageClient({ students, disciplines }: Props) {
             Importar Excel
           </button>
           <button
+            onClick={() =>
+              startSend(async () => {
+                setSendResult(null)
+                const res = await sendInvitationsToAll()
+                setSendResult(res)
+              })
+            }
+            disabled={sending || students.length === 0}
+            className="btn-secondary px-4 py-2 rounded-xl text-sm disabled:opacity-40"
+          >
+            {sending ? 'Enviando...' : 'Enviar accesos'}
+          </button>
+          <button
             onClick={() => setShowForm(true)}
             className="btn-primary px-4 py-2 rounded-xl text-sm"
           >
@@ -65,6 +81,29 @@ export function StudentsPageClient({ students, disciplines }: Props) {
           style={{ borderRadius: '0.75rem' }}
         />
       </div>
+
+      {/* Resultado de "Enviar accesos" */}
+      {sendResult && (
+        <div
+          className="mb-4 flex items-center justify-between gap-3 rounded-xl px-4 py-3 text-sm"
+          style={{
+            background: sendResult.errors.length === 0 ? 'rgba(34,197,94,0.10)' : 'rgba(234,179,8,0.10)',
+            border: `1px solid ${sendResult.errors.length === 0 ? 'rgba(34,197,94,0.25)' : 'rgba(234,179,8,0.25)'}`,
+            color: sendResult.errors.length === 0 ? '#4ade80' : '#fbbf24',
+          }}
+        >
+          <span>
+            {sendResult.sent > 0 && `✓ ${sendResult.sent} acceso${sendResult.sent !== 1 ? 's' : ''} enviado${sendResult.sent !== 1 ? 's' : ''}`}
+            {sendResult.errors.length > 0 && `${sendResult.sent > 0 ? ' · ' : ''}${sendResult.errors.length} error${sendResult.errors.length !== 1 ? 'es' : ''}`}
+          </span>
+          <button
+            onClick={() => setSendResult(null)}
+            style={{ color: 'inherit', opacity: 0.6, background: 'none', border: 'none', cursor: 'pointer', lineHeight: 1 }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <div
         className="rounded-2xl p-6"

@@ -244,6 +244,36 @@ export async function resendInvite(email: string): Promise<{ error?: string }> {
   }
 }
 
+// Envía (o reenvía) el email de acceso a TODOS los alumnos activos del centro
+export async function sendInvitationsToAll(): Promise<{ sent: number; errors: string[] }> {
+  const profile = await getMyProfile()
+  if (!profile?.center_id) throw new Error('No se pudo obtener el centro')
+
+  const admin = createAdminClient()
+  const { data: students } = await admin
+    .from('profiles')
+    .select('email')
+    .eq('role', 'student')
+    .eq('center_id', profile.center_id)
+    .eq('is_active', true)
+
+  const results = { sent: 0, errors: [] as string[] }
+
+  for (const student of students ?? []) {
+    if (!student.email) continue
+    const res = await resendInvite(student.email)
+    if (res.error) {
+      results.errors.push(`${student.email}: ${res.error}`)
+    } else {
+      results.sent++
+    }
+    // Pequeña pausa para no saturar el rate-limit de Supabase Auth
+    await new Promise((r) => setTimeout(r, 350))
+  }
+
+  return results
+}
+
 export async function bulkInviteStudents(
   students: Array<{ full_name: string; email: string; phone?: string }>
 ): Promise<{ success: number; errors: string[] }> {
