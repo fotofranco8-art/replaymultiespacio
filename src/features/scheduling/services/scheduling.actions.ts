@@ -99,14 +99,53 @@ export async function getClassTemplates(): Promise<ClassTemplate[]> {
     .select(`
       *,
       disciplines (name, color),
-      profiles (full_name)
+      profiles (full_name),
+      class_template_students (student_id)
     `)
     .eq('center_id', profile.center_id)
     .eq('is_active', true)
     .order('day_of_week')
     .order('start_time')
 
-  return (data ?? []) as ClassTemplate[]
+  return (data ?? []).map((t) => ({
+    ...t,
+    student_ids: Array.isArray(t.class_template_students)
+      ? t.class_template_students.map((s: { student_id: string }) => s.student_id)
+      : [],
+  })) as ClassTemplate[]
+}
+
+export async function updateClassTemplate(id: string, input: NewTemplateInput) {
+  const supabase = await createClient()
+  const profile = await getMyProfile()
+  if (!profile?.center_id) throw new Error('No center found')
+
+  const { student_ids, ...templateData } = input
+
+  const { error } = await supabase
+    .from('class_templates')
+    .update({
+      ...templateData,
+      max_capacity: templateData.max_capacity ?? 20,
+    })
+    .eq('id', id)
+
+  if (error) throw error
+
+  // Reemplazar alumnos asignados
+  await supabase.from('class_template_students').delete().eq('template_id', id)
+
+  if (student_ids && student_ids.length > 0) {
+    await supabase.from('class_template_students').insert(
+      student_ids.map((student_id) => ({
+        template_id: id,
+        student_id,
+        center_id: profile.center_id!,
+      }))
+    )
+  }
+
+  revalidateAll()
 }
 
 export async function createClassTemplate(input: NewTemplateInput) {

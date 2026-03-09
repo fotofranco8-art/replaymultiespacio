@@ -7,9 +7,10 @@ import { DAY_NAMES } from '../types'
 
 interface Props {
   templates: ClassTemplate[]
+  onEdit?: (template: ClassTemplate) => void
 }
 
-export function WeeklyTemplateGrid({ templates }: Props) {
+export function WeeklyTemplateGrid({ templates, onEdit }: Props) {
   const [pending, startTransition] = useTransition()
 
   if (templates.length === 0) {
@@ -45,13 +46,23 @@ export function WeeklyTemplateGrid({ templates }: Props) {
                 </div>
                 <div className="text-white/40">{t.profiles?.full_name}</div>
                 {t.room && <div className="text-white/30">{t.room}</div>}
-                <button
-                  onClick={() => startTransition(() => deleteClassTemplate(t.id))}
-                  disabled={pending}
-                  className="mt-1 text-red-400 hover:text-red-600 text-xs"
-                >
-                  Eliminar
-                </button>
+                <div className="mt-1 flex gap-2">
+                  {onEdit && (
+                    <button
+                      onClick={() => onEdit(t)}
+                      className="text-purple-400 hover:text-purple-300 text-xs transition-colors"
+                    >
+                      Editar
+                    </button>
+                  )}
+                  <button
+                    onClick={() => startTransition(() => deleteClassTemplate(t.id))}
+                    disabled={pending}
+                    className="text-red-400 hover:text-red-600 text-xs"
+                  >
+                    Eliminar
+                  </button>
+                </div>
               </div>
             ))}
           </div>

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { WeeklyTemplateGrid } from '@/features/scheduling/components/WeeklyTemplateGrid'
 import { NewTemplateForm } from '@/features/scheduling/components/NewTemplateForm'
+import { EditTemplateModal } from '@/features/scheduling/components/EditTemplateModal'
 import { projectMonth } from '@/features/scheduling/services/scheduling.actions'
 import type { Discipline, ClassTemplate } from '@/features/scheduling/types'
 
@@ -31,6 +32,7 @@ interface Props {
 
 export function ClassTemplatesPageClient({ disciplines, templates, teachers, rooms, students }: Props) {
   const [showTemplateForm, setShowTemplateForm] = useState(false)
+  const [editingTemplate, setEditingTemplate] = useState<ClassTemplate | null>(null)
   const [projecting, startProjection] = useTransition()
   const [projResult, setProjResult] = useState<string | null>(null)
 
@@ -107,7 +109,7 @@ export function ClassTemplatesPageClient({ disciplines, templates, teachers, roo
           border: '1px solid rgba(255,255,255,0.07)',
         }}
       >
-        <WeeklyTemplateGrid templates={templates} />
+        <WeeklyTemplateGrid templates={templates} onEdit={setEditingTemplate} />
       </div>
 
       {showTemplateForm && (
@@ -117,6 +119,17 @@ export function ClassTemplatesPageClient({ disciplines, templates, teachers, roo
           rooms={rooms}
           students={students}
           onClose={() => setShowTemplateForm(false)}
+        />
+      )}
+
+      {editingTemplate && (
+        <EditTemplateModal
+          template={editingTemplate}
+          disciplines={disciplines}
+          teachers={teachers}
+          rooms={rooms}
+          students={students}
+          onClose={() => setEditingTemplate(null)}
         />
       )}
     </div>
