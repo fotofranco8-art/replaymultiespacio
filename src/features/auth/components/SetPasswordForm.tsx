@@ -1,37 +1,38 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { setPassword } from '@/features/auth/services/auth.actions'
+import { useRouter } from 'next/navigation'
+import { ROLE_REDIRECTS } from '@/features/auth/types'
 
 export default function SetPasswordForm() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState('')
-  const [isPending, startTransition] = useTransition()
-
-  // Estado de sesión para el flujo de recovery (hash fragment)
+  const [isPending, setIsPending] = useState(false)
   const [sessionReady, setSessionReady] = useState(false)
   const [sessionError, setSessionError] = useState('')
 
-  useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+  // Crear el cliente browser una sola vez
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
-    // Primero verificar si ya hay sesión activa (flujo de invitación via /callback)
+  useEffect(() => {
+    // Flujo de invitación: sesión ya establecida por /callback via exchangeCodeForSession
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setSessionReady(true)
         return
       }
 
-      // Flujo de recovery: leer tokens del hash fragment del URL
-      // URL esperada: /set-password#access_token=xxx&refresh_token=xxx&type=recovery
+      // Flujo de recovery: tokens vienen en el hash del URL
+      // Formato: /set-password#access_token=xxx&refresh_token=xxx&type=recovery
       const hash = window.location.hash.substring(1)
       if (!hash) {
-        setSessionError('Enlace inválido o expirado. Pedí un nuevo email.')
+        setSessionError('Enlace inválido o expirado. Pedí un nuevo email al administrador.')
         return
       }
 
@@ -40,32 +41,61 @@ export default function SetPasswordForm() {
       const refreshToken = params.get('refresh_token')
 
       if (!accessToken || !refreshToken) {
-        setSessionError('Enlace inválido o expirado. Pedí un nuevo email.')
+        setSessionError('Enlace inválido o expirado. Pedí un nuevo email al administrador.')
         return
       }
 
-      // Establecer sesión desde los tokens del hash
       supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
         .then(({ error: sessionErr }) => {
           if (sessionErr) {
             setSessionError(sessionErr.message ?? 'No se pudo verificar el enlace.')
           } else {
             setSessionReady(true)
-            // Limpiar el hash del URL para que no quede expuesto
+            // Limpiar hash del URL para no exponer los tokens
             window.history.replaceState(null, '', window.location.pathname)
           }
         })
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
+
     const formData = new FormData(e.currentTarget)
-    startTransition(async () => {
-      const result = await setPassword(formData)
-      if (result?.error) setError(result.error)
-    })
+    const password = formData.get('password') as string
+    const confirm = formData.get('confirm') as string
+
+    if (!password || password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres')
+      return
+    }
+    if (password !== confirm) {
+      setError('Las contraseñas no coinciden')
+      return
+    }
+
+    setIsPending(true)
+
+    // Actualizar contraseña directo desde el cliente (evita problema de cookies SSR)
+    const { error: updateError } = await supabase.auth.updateUser({ password })
+    if (updateError) {
+      setError(updateError.message)
+      setIsPending(false)
+      return
+    }
+
+    // Obtener rol para redirigir
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user?.id ?? '')
+      .maybeSingle()
+
+    const role = (profile?.role ?? 'student') as keyof typeof ROLE_REDIRECTS
+    router.push(ROLE_REDIRECTS[role] ?? '/student')
   }
 
   // Cargando sesión
@@ -73,8 +103,8 @@ export default function SetPasswordForm() {
     return (
       <div className="w-full flex justify-center py-8">
         <div
-          className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: 'rgba(255,255,255,0.2)', borderTopColor: '#FF2D78' }}
+          className="w-5 h-5 rounded-full border-2 animate-spin"
+          style={{ borderColor: 'rgba(255,255,255,0.15)', borderTopColor: '#FF2D78' }}
         />
       </div>
     )
