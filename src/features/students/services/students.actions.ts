@@ -206,38 +206,42 @@ export async function toggleStudentStatus(studentId: string, isActive: boolean) 
 }
 
 export async function resendInvite(email: string): Promise<{ error?: string }> {
-  const profile = await getMyProfile()
-  if (!profile?.center_id) return { error: 'No se pudo obtener el centro' }
+  try {
+    const profile = await getMyProfile()
+    if (!profile?.center_id) return { error: 'No se pudo obtener el centro' }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://replaymultiespacioartistico.vercel.app'
-  const admin = createAdminClient()
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://replaymultiespacioartistico.vercel.app'
+    const admin = createAdminClient()
 
-  const { error } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${siteUrl}/set-password`,
-  })
+    const { error } = await admin.auth.admin.inviteUserByEmail(email, {
+      redirectTo: `${siteUrl}/set-password`,
+    })
 
-  if (error) {
-    if (error.message?.includes('already been registered')) {
-      // El alumno ya completó el registro → enviar email de recuperación de contraseña.
-      // IMPORTANTE: resetPasswordForEmail usa PKCE en el cliente SSR, lo que guarda el
-      // verificador en las cookies del browser del ADMIN. El alumno no tiene ese verificador
-      // en su browser, por lo que el intercambio falla. Solución: usar flowType:'implicit'
-      // para no generar PKCE → Supabase envía el link con tokens en el hash del URL.
-      const implicitClient = createSupabaseClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        { auth: { persistSession: false, autoRefreshToken: false, flowType: 'implicit' } }
-      )
-      const { error: recoveryError } = await implicitClient.auth.resetPasswordForEmail(email, {
-        redirectTo: `${siteUrl}/set-password`,
-      })
-      if (recoveryError) return { error: recoveryError.message ?? 'Error al enviar recuperación' }
-      return {}
+    if (error) {
+      // 422 = alumno ya registrado → enviar recovery en su lugar
+      const isAlreadyRegistered =
+        error.status === 422 ||
+        error.message?.toLowerCase().includes('already')
+
+      if (isAlreadyRegistered) {
+        const implicitClient = createSupabaseClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          { auth: { persistSession: false, autoRefreshToken: false, flowType: 'implicit' } }
+        )
+        const { error: recoveryError } = await implicitClient.auth.resetPasswordForEmail(email, {
+          redirectTo: `${siteUrl}/set-password`,
+        })
+        if (recoveryError) return { error: recoveryError.message ?? 'Error al enviar recuperación' }
+        return {}
+      }
+      return { error: error.message ?? 'Error al reenviar el email' }
     }
-    return { error: error.message ?? 'Error al reenviar el email' }
-  }
 
-  return {}
+    return {}
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : 'Error desconocido' }
+  }
 }
 
 export async function bulkInviteStudents(
