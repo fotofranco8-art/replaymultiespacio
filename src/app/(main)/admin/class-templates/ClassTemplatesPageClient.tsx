@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { WeeklyTemplateGrid } from '@/features/scheduling/components/WeeklyTemplateGrid'
 import { NewTemplateForm } from '@/features/scheduling/components/NewTemplateForm'
 import { EditTemplateModal } from '@/features/scheduling/components/EditTemplateModal'
-import { projectMonth } from '@/features/scheduling/services/scheduling.actions'
+import { projectMonth, clearAllClasses } from '@/features/scheduling/services/scheduling.actions'
 import type { Discipline, ClassTemplate } from '@/features/scheduling/types'
 
 interface Teacher {
@@ -36,6 +36,21 @@ export function ClassTemplatesPageClient({ disciplines, templates, teachers, roo
   const [editingTemplate, setEditingTemplate] = useState<ClassTemplate | null>(null)
   const [projecting, startProjection] = useTransition()
   const [projResult, setProjResult] = useState<string | null>(null)
+  const [clearing, startClear] = useTransition()
+  const [confirmClear, setConfirmClear] = useState(false)
+
+  function handleClearAll() {
+    startClear(async () => {
+      try {
+        const { deleted } = await clearAllClasses()
+        setProjResult(`✓ ${deleted} clase${deleted !== 1 ? 's' : ''} eliminada${deleted !== 1 ? 's' : ''}`)
+      } catch (e) {
+        setProjResult(e instanceof Error ? e.message : 'Error al limpiar')
+      } finally {
+        setConfirmClear(false)
+      }
+    })
+  }
 
   function handleProjectMonth() {
     const now = new Date()
@@ -61,7 +76,7 @@ export function ClassTemplatesPageClient({ disciplines, templates, teachers, roo
           </h1>
           <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.40)' }}>Plantilla semanal recurrente</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => setShowTemplateForm(true)}
             disabled={disciplines.length === 0 || teachers.length === 0}
@@ -76,6 +91,38 @@ export function ClassTemplatesPageClient({ disciplines, templates, teachers, roo
           >
             {projecting ? 'Proyectando...' : 'Proyectar mes'}
           </button>
+          {!confirmClear ? (
+            <button
+              onClick={() => setConfirmClear(true)}
+              className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
+              style={{
+                background: 'rgba(239,68,68,0.08)',
+                border: '1px solid rgba(239,68,68,0.20)',
+                color: 'rgba(248,113,113,0.80)',
+              }}
+            >
+              Limpiar clases
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.30)' }}>
+              <span className="text-xs" style={{ color: '#f87171' }}>¿Eliminar todo?</span>
+              <button
+                onClick={handleClearAll}
+                disabled={clearing}
+                className="text-xs font-semibold px-2 py-1 rounded-lg disabled:opacity-50"
+                style={{ background: '#ef4444', color: '#fff' }}
+              >
+                {clearing ? '...' : 'Sí'}
+              </button>
+              <button
+                onClick={() => setConfirmClear(false)}
+                className="text-xs px-2 py-1 rounded-lg"
+                style={{ color: 'rgba(255,255,255,0.50)' }}
+              >
+                No
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

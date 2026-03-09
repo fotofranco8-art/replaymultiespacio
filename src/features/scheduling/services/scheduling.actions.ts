@@ -375,6 +375,25 @@ export async function cancelClass(classId: string) {
   revalidatePath('/admin/calendar')
 }
 
+// Elimina TODAS las clases del centro (attendance y class_enrollments en cascade).
+// Útil para demo/reset. No toca plantillas ni alumnos.
+export async function clearAllClasses(): Promise<{ deleted: number }> {
+  const supabase = await createClient()
+  const profile = await getMyProfile()
+  if (!profile?.center_id) return { deleted: 0 }
+
+  const { count, error } = await supabase
+    .from('classes')
+    .delete({ count: 'exact' })
+    .eq('center_id', profile.center_id)
+
+  if (error) throw error
+
+  revalidatePath('/admin/calendar')
+  revalidatePath('/admin/class-templates')
+  return { deleted: count ?? 0 }
+}
+
 export async function getMonthlyRevenue(): Promise<number> {
   const supabase = await createClient()
   const profile = await getMyProfile()
