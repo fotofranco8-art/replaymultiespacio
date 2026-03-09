@@ -118,14 +118,17 @@ export async function validateAndCheckin(token: string): Promise<CheckinResult> 
     return { success: true, message: 'Ya registraste tu asistencia para esta clase', studentName: profile.full_name }
   }
 
-  // 7. Register attendance
-  const { error } = await supabase.from('attendance').insert({
+  // 7. Register attendance — usamos admin client para evitar issues de RLS/sesión
+  const { error } = await admin.from('attendance').insert({
     class_id: activeClass.id,
     student_id: user.id,
     center_id: qrToken.center_id,
   })
 
-  if (error) return { success: false, message: 'Error al registrar asistencia' }
+  if (error) {
+    console.error('[checkin] attendance insert error:', JSON.stringify(error))
+    return { success: false, message: `Error al registrar: ${error.message}` }
+  }
 
   const disciplineName = Array.isArray(activeClass.disciplines)
     ? activeClass.disciplines[0]?.name
