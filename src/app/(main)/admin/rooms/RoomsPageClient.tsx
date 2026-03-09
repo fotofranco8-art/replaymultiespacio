@@ -2,12 +2,32 @@
 
 import { useState, useTransition } from 'react'
 import { X } from 'lucide-react'
-import { createRoom, toggleRoom } from '@/features/rooms/services/rooms.actions'
+import { createRoom, toggleRoom, rotateRoomsForWeek } from '@/features/rooms/services/rooms.actions'
 import type { Room, RoomStats } from '@/features/rooms/types'
 
 interface Props {
   rooms: Room[]
   stats: RoomStats
+}
+
+// Lunes de la semana actual en formato YYYY-MM-DD (hora local)
+function getCurrentWeekMonday(): string {
+  const d = new Date()
+  const day = d.getDay() // 0=dom
+  const diff = (day === 0 ? -6 : 1 - day)
+  d.setDate(d.getDate() + diff)
+  return d.toISOString().split('T')[0]
+}
+
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + 'T00:00:00')
+  d.setDate(d.getDate() + days)
+  return d.toISOString().split('T')[0]
+}
+
+function formatWeekLabel(mondayStr: string): string {
+  const d = new Date(mondayStr + 'T00:00:00')
+  return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 function EquipmentTagInput({
@@ -76,14 +96,21 @@ export function RoomsPageClient({ rooms, stats }: Props) {
   const [formCapacity, setFormCapacity] = useState(20)
   const [formDescription, setFormDescription] = useState('')
   const [formEquipment, setFormEquipment] = useState<string[]>([])
+  const [formType, setFormType] = useState<'grupal' | 'individual'>('grupal')
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+
+  // Rotación semanal
+  const [rotationWeek, setRotationWeek] = useState(getCurrentWeekMonday)
+  const [rotationResult, setRotationResult] = useState<{ assigned: number; skipped: number } | null>(null)
+  const [rotatingPending, startRotating] = useTransition()
 
   function resetForm() {
     setFormName('')
     setFormCapacity(20)
     setFormDescription('')
     setFormEquipment([])
+    setFormType('grupal')
     setError(null)
   }
 
@@ -97,6 +124,7 @@ export function RoomsPageClient({ rooms, stats }: Props) {
           capacity: formCapacity,
           description: formDescription || undefined,
           equipment: formEquipment,
+          type: formType,
         })
         resetForm()
         setShowForm(false)
@@ -106,12 +134,22 @@ export function RoomsPageClient({ rooms, stats }: Props) {
     })
   }
 
+  function handleRotate() {
+    setRotationResult(null)
+    startRotating(async () => {
+      const result = await rotateRoomsForWeek(rotationWeek)
+      setRotationResult(result)
+    })
+  }
+
   const glassCard = {
     background: 'rgba(255,255,255,0.04)',
     backdropFilter: 'blur(12px)',
     WebkitBackdropFilter: 'blur(12px)',
     border: '1px solid rgba(255,255,255,0.07)',
   }
+
+  const inputCls = 'glass-input w-full'
 
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8">
@@ -158,7 +196,7 @@ export function RoomsPageClient({ rooms, stats }: Props) {
           <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>Sin aulas configuradas.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {rooms.map((room) => (
             <div
               key={room.id}
@@ -173,15 +211,27 @@ export function RoomsPageClient({ rooms, stats }: Props) {
                     <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>Cap. {room.capacity} personas</p>
                   </div>
                 </div>
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
-                  style={{
-                    background: room.is_active ? 'rgba(34,197,94,0.13)' : 'rgba(255,255,255,0.07)',
-                    color: room.is_active ? '#4ade80' : 'rgba(255,255,255,0.35)',
-                  }}
-                >
-                  {room.is_active ? 'Activa' : 'Inactiva'}
-                </span>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{
+                      background: room.is_active ? 'rgba(34,197,94,0.13)' : 'rgba(255,255,255,0.07)',
+                      color: room.is_active ? '#4ade80' : 'rgba(255,255,255,0.35)',
+                    }}
+                  >
+                    {room.is_active ? 'Activa' : 'Inactiva'}
+                  </span>
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={
+                      room.type === 'grupal'
+                        ? { background: 'rgba(168,85,247,0.14)', color: '#C084FC' }
+                        : { background: 'rgba(249,115,22,0.14)', color: '#fb923c' }
+                    }
+                  >
+                    {room.type === 'grupal' ? 'Grupal' : 'Individual'}
+                  </span>
+                </div>
               </div>
 
               {room.description && (
@@ -222,6 +272,66 @@ export function RoomsPageClient({ rooms, stats }: Props) {
         </div>
       )}
 
+      {/* Sección rotación semanal */}
+      <div className="rounded-2xl p-6" style={glassCard}>
+        <h2
+          className="text-base font-semibold text-white mb-1"
+          style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+        >
+          Rotación Semanal
+        </h2>
+        <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.38)' }}>
+          Asigna aulas automáticamente a las clases sin aula fija de la semana seleccionada.
+        </p>
+
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Navegación de semana */}
+          <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <button
+              onClick={() => { setRotationResult(null); setRotationWeek((w) => addDays(w, -7)) }}
+              className="text-white/50 hover:text-white transition-colors text-sm px-1"
+            >
+              ←
+            </button>
+            <span className="text-sm text-white font-medium min-w-[140px] text-center">
+              Sem. {formatWeekLabel(rotationWeek)}
+            </span>
+            <button
+              onClick={() => { setRotationResult(null); setRotationWeek((w) => addDays(w, 7)) }}
+              className="text-white/50 hover:text-white transition-colors text-sm px-1"
+            >
+              →
+            </button>
+          </div>
+
+          {/* Botón rotar */}
+          <button
+            onClick={handleRotate}
+            disabled={rotatingPending}
+            className="px-4 py-2 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-opacity hover:opacity-80"
+            style={{ background: 'linear-gradient(135deg, #FF2D78, #C0155A)' }}
+          >
+            {rotatingPending ? 'Rotando...' : 'Rotar ahora'}
+          </button>
+
+          {/* Resultado */}
+          {rotationResult && (
+            <span
+              className="text-sm font-medium px-3 py-2 rounded-xl"
+              style={{
+                background: rotationResult.assigned > 0 ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.06)',
+                color: rotationResult.assigned > 0 ? '#4ade80' : 'rgba(255,255,255,0.45)',
+              }}
+            >
+              {rotationResult.assigned > 0
+                ? `✓ ${rotationResult.assigned} clases asignadas`
+                : 'Sin clases pendientes de asignación'}
+              {rotationResult.skipped > 0 && ` · ${rotationResult.skipped} sin aula disponible`}
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* Create modal */}
       {showForm && (
         <div
@@ -252,15 +362,40 @@ export function RoomsPageClient({ rooms, stats }: Props) {
             <form onSubmit={handleCreate} className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Nombre</label>
-                <input value={formName} onChange={(e) => setFormName(e.target.value)} required placeholder="Ej. Sala Principal" className="glass-input" />
+                <input value={formName} onChange={(e) => setFormName(e.target.value)} required placeholder="Ej. Sala Principal" className={inputCls} />
               </div>
+
+              {/* Tipo de aula */}
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Tipo de aula</label>
+                <div className="flex gap-2">
+                  {(['grupal', 'individual'] as const).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setFormType(t)}
+                      className="flex-1 py-2 rounded-xl text-sm font-medium transition-all"
+                      style={
+                        formType === t
+                          ? t === 'grupal'
+                            ? { background: 'rgba(168,85,247,0.22)', color: '#C084FC', border: '1px solid rgba(168,85,247,0.35)' }
+                            : { background: 'rgba(249,115,22,0.18)', color: '#fb923c', border: '1px solid rgba(249,115,22,0.30)' }
+                          : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.40)', border: '1px solid rgba(255,255,255,0.08)' }
+                      }
+                    >
+                      {t === 'grupal' ? 'Grupal' : 'Individual'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Capacidad</label>
-                <input type="number" value={formCapacity} onChange={(e) => setFormCapacity(Number(e.target.value))} min={1} className="glass-input" />
+                <input type="number" value={formCapacity} onChange={(e) => setFormCapacity(Number(e.target.value))} min={1} className={inputCls} />
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Descripción (opcional)</label>
-                <input value={formDescription} onChange={(e) => setFormDescription(e.target.value)} placeholder="Breve descripción..." className="glass-input" />
+                <input value={formDescription} onChange={(e) => setFormDescription(e.target.value)} placeholder="Breve descripción..." className={inputCls} />
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Equipamiento</label>

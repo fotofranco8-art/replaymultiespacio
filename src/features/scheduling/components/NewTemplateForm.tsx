@@ -9,7 +9,7 @@ import type { Discipline } from '../types'
 import { DAY_NAMES_FULL } from '../types'
 
 interface Teacher { id: string; full_name: string }
-interface Room { id: string; name: string }
+interface Room { id: string; name: string; type?: 'grupal' | 'individual' }
 interface Student { id: string; full_name: string }
 
 interface Props {
@@ -163,14 +163,28 @@ export function NewTemplateForm({ disciplines, teachers, rooms, students, onClos
                 className="w-3.5 h-3.5 rounded"
                 style={{ accentColor: '#A855F7' }}
               />
-              Sin aula fija
+              Sin aula fija (rotación automática)
             </label>
-            {!noRoom && (
-              rooms.length > 0 ? (
+            {!noRoom && (() => {
+              // Filtrar aulas según tipo de disciplina seleccionada
+              const selDisc = disciplines.find((d) => d.id === form.discipline_id)
+              const filteredRooms = rooms.filter((r) => {
+                if (!selDisc) return true // sin disciplina: mostrar todas
+                if (selDisc.type === 'grupal') return r.type === 'grupal'
+                return true // individual: mostrar todas, grupal primero
+              }).sort((a, b) => {
+                if (!selDisc || selDisc.type !== 'individual') return 0
+                if (a.type === 'grupal' && b.type !== 'grupal') return -1
+                if (a.type !== 'grupal' && b.type === 'grupal') return 1
+                return 0
+              })
+              return filteredRooms.length > 0 ? (
                 <select value={form.room} onChange={(e) => set('room', e.target.value)} className={inputCls} style={inputStyle}>
                   <option value="" style={{ background: '#1A0A30' }}>Seleccionar aula...</option>
-                  {rooms.map((r) => (
-                    <option key={r.id} value={r.name} style={{ background: '#1A0A30' }}>{r.name}</option>
+                  {filteredRooms.map((r) => (
+                    <option key={r.id} value={r.name} style={{ background: '#1A0A30' }}>
+                      {r.name}{r.type === 'individual' ? ' (Individual)' : ''}
+                    </option>
                   ))}
                 </select>
               ) : (
@@ -182,9 +196,9 @@ export function NewTemplateForm({ disciplines, teachers, rooms, students, onClos
                   style={inputStyle}
                 />
               )
-            )}
+            })()}
             {noRoom && (
-              <p className="text-xs text-white/30 mt-1">El aula se definirá al crear cada clase individualmente.</p>
+              <p className="text-xs text-white/30 mt-1">El aula se asignará automáticamente en la rotación semanal.</p>
             )}
           </div>
 

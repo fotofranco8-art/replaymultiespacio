@@ -15,6 +15,7 @@ interface Teacher {
 interface Room {
   id: string
   name: string
+  type?: 'grupal' | 'individual'
 }
 
 interface Student {

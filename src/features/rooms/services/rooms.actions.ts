@@ -63,6 +63,7 @@ export async function createRoom(input: NewRoomInput) {
     capacity: input.capacity,
     description: input.description ?? null,
     equipment: input.equipment ?? [],
+    type: input.type ?? 'grupal',
   })
 
   if (error) throw error
@@ -80,4 +81,109 @@ export async function toggleRoom(id: string, isActive: boolean) {
   const supabase = await createClient()
   await supabase.from('rooms').update({ is_active: isActive }).eq('id', id)
   revalidatePath('/admin/rooms')
+}
+
+// Calcula el número de semana ISO de una fecha
+function getISOWeek(d: Date): number {
+  const date = new Date(d)
+  date.setHours(0, 0, 0, 0)
+  date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7))
+  const week1 = new Date(date.getFullYear(), 0, 4)
+  return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
+}
+
+// Asigna aulas a todas las clases sin aula de la semana indicada
+// weekStartDate = 'YYYY-MM-DD' del lunes de la semana
+export async function rotateRoomsForWeek(
+  weekStartDate: string
+): Promise<{ assigned: number; skipped: number }> {
+  const supabase = await createClient()
+  const profile = await getMyProfile()
+  if (!profile?.center_id) return { assigned: 0, skipped: 0 }
+
+  const weekStart = new Date(weekStartDate + 'T00:00:00')
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekEnd.getDate() + 6)
+  const weekEndDate = weekEnd.toISOString().split('T')[0]
+  const weekNum = getISOWeek(weekStart)
+
+  // Cargar aulas activas del centro
+  const { data: allRooms } = await supabase
+    .from('rooms')
+    .select('name, type')
+    .eq('center_id', profile.center_id)
+    .eq('is_active', true)
+
+  const grupalRooms = (allRooms ?? []).filter((r) => r.type === 'grupal')
+  const individualRooms = (allRooms ?? []).filter((r) => r.type === 'individual')
+
+  // Clases sin aula asignada en el rango, con tipo de disciplina
+  const { data: classes } = await supabase
+    .from('classes')
+    .select('id, scheduled_date, start_time, end_time, disciplines(type)')
+    .eq('center_id', profile.center_id)
+    .gte('scheduled_date', weekStartDate)
+    .lte('scheduled_date', weekEndDate)
+    .is('room', null)
+    .eq('is_cancelled', false)
+
+  if (!classes || classes.length === 0) return { assigned: 0, skipped: 0 }
+
+  // Cargar todas las clases con aula ya asignada en la semana (para detectar conflictos de horario)
+  const { data: occupiedClasses } = await supabase
+    .from('classes')
+    .select('scheduled_date, start_time, end_time, room')
+    .eq('center_id', profile.center_id)
+    .gte('scheduled_date', weekStartDate)
+    .lte('scheduled_date', weekEndDate)
+    .not('room', 'is', null)
+    .eq('is_cancelled', false)
+
+  // Índice de conflictos: clave = 'fecha|start_time' → Set de nombres de aulas ocupadas
+  const conflictMap = new Map<string, Set<string>>()
+  for (const oc of occupiedClasses ?? []) {
+    const key = `${oc.scheduled_date}|${oc.start_time}`
+    if (!conflictMap.has(key)) conflictMap.set(key, new Set())
+    if (oc.room) conflictMap.get(key)!.add(oc.room)
+  }
+
+  let assigned = 0
+  let skipped = 0
+
+  for (const cls of classes) {
+    const disc = Array.isArray(cls.disciplines) ? cls.disciplines[0] : cls.disciplines
+    const discType = disc?.type as 'grupal' | 'individual' | undefined
+    let roomName: string | null = null
+
+    if (discType === 'grupal') {
+      if (grupalRooms.length > 0) {
+        roomName = grupalRooms[weekNum % grupalRooms.length].name
+      }
+    } else {
+      // Disciplina individual: preferir aula grupal libre en ese horario
+      const key = `${cls.scheduled_date}|${cls.start_time}`
+      const occupied = conflictMap.get(key) ?? new Set()
+      const freeGrupal = grupalRooms.find((r) => !occupied.has(r.name))
+      if (freeGrupal) {
+        roomName = freeGrupal.name
+      } else if (individualRooms.length > 0) {
+        roomName = individualRooms[weekNum % individualRooms.length].name
+      }
+    }
+
+    if (roomName) {
+      await supabase.from('classes').update({ room: roomName }).eq('id', cls.id)
+      // Actualizar mapa de conflictos con la recién asignada
+      const key = `${cls.scheduled_date}|${cls.start_time}`
+      if (!conflictMap.has(key)) conflictMap.set(key, new Set())
+      conflictMap.get(key)!.add(roomName)
+      assigned++
+    } else {
+      skipped++
+    }
+  }
+
+  revalidatePath('/admin/rooms')
+  revalidatePath('/admin/schedule')
+  return { assigned, skipped }
 }

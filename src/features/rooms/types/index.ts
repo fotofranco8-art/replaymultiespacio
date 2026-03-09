@@ -5,6 +5,7 @@ export interface Room {
   capacity: number
   description: string | null
   equipment: string[]
+  type: 'grupal' | 'individual'
   is_active: boolean
   created_at: string
 }
@@ -14,6 +15,7 @@ export interface NewRoomInput {
   capacity: number
   description?: string
   equipment?: string[]
+  type?: 'grupal' | 'individual'
 }
 
 export interface RoomStats {
