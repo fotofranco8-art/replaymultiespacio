@@ -148,6 +148,8 @@ export function SchedulingPageClient({ disciplines, templates, holidays, teacher
         <NewTemplateForm
           disciplines={disciplines}
           teachers={teachers}
+          rooms={[]}
+          students={[]}
           onClose={() => setShowTemplateForm(false)}
         />
       )}
