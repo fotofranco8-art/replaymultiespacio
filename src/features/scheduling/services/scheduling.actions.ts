@@ -182,7 +182,19 @@ export async function createClassTemplate(input: NewTemplateInput) {
 
 export async function deleteClassTemplate(id: string) {
   const supabase = await createClient()
+  const today = new Date().toISOString().split('T')[0]
+
+  // Eliminar clases futuras generadas por esta plantilla
+  // (el CASCADE en class_enrollments limpia las inscripciones automáticamente)
+  await supabase
+    .from('classes')
+    .delete()
+    .eq('template_id', id)
+    .gte('scheduled_date', today)
+
+  // Desactivar la plantilla
   await supabase.from('class_templates').update({ is_active: false }).eq('id', id)
+
   revalidateAll()
 }
 
