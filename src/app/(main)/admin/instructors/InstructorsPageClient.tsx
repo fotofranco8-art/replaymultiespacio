@@ -8,6 +8,7 @@ import {
   inviteInstructor,
   updateInstructor,
   toggleInstructorStatus,
+  resendInviteInstructor,
 } from '@/features/instructors/services/instructors.actions'
 import { INSTRUCTOR_SPECIALTIES } from '@/features/instructors/types'
 import type { Instructor } from '@/features/instructors/types'
@@ -60,6 +61,70 @@ function SpecialtiesGrid({
           </label>
         )
       })}
+    </div>
+  )
+}
+
+function ResendButton({ email }: { email: string }) {
+  const [pending, startTransition] = useTransition()
+  const [status, setStatus] = useState<'idle' | 'ok' | 'error'>('idle')
+  const [msg, setMsg] = useState('')
+
+  function handleClick() {
+    setStatus('idle')
+    startTransition(async () => {
+      const res = await resendInviteInstructor(email)
+      if (res.error) {
+        setStatus('error')
+        setMsg(res.error)
+      } else {
+        setStatus('ok')
+        setTimeout(() => setStatus('idle'), 3000)
+      }
+    })
+  }
+
+  return (
+    <div className="relative group/resend">
+      <button
+        onClick={handleClick}
+        disabled={pending}
+        title="Reenviar email de invitación"
+        className="transition-colors disabled:opacity-40 cursor-pointer"
+        style={{
+          color: status === 'ok' ? '#4ade80' : status === 'error' ? '#f87171' : 'rgba(255,255,255,0.30)',
+        }}
+        onMouseEnter={(e) => { if (status === 'idle') e.currentTarget.style.color = 'rgba(255,255,255,0.70)' }}
+        onMouseLeave={(e) => { if (status === 'idle') e.currentTarget.style.color = 'rgba(255,255,255,0.30)' }}
+      >
+        {/* Icono de email */}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {status === 'ok' ? (
+            <polyline points="20 6 9 17 4 12" />
+          ) : (
+            <>
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </>
+          )}
+        </svg>
+      </button>
+      {status === 'error' && (
+        <div
+          className="absolute bottom-full right-0 mb-1.5 whitespace-nowrap rounded-lg px-2 py-1 text-xs z-10"
+          style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}
+        >
+          {msg}
+        </div>
+      )}
+      {status === 'idle' && (
+        <div
+          className="absolute bottom-full right-0 mb-1.5 whitespace-nowrap rounded-lg px-2 py-1 text-xs z-10 pointer-events-none opacity-0 group-hover/resend:opacity-100 transition-opacity"
+          style={{ background: 'rgba(0,0,0,0.70)', color: 'rgba(255,255,255,0.70)' }}
+        >
+          Reenviar invitación
+        </div>
+      )}
     </div>
   )
 }
@@ -334,7 +399,8 @@ export function InstructorsPageClient({ instructors }: Props) {
                   >
                     {inst.is_active ? 'Activo' : 'Inactivo'}
                   </span>
-                  <div className="flex gap-3 shrink-0">
+                  <div className="flex items-center gap-3 shrink-0">
+                    <ResendButton email={inst.email} />
                     <button
                       onClick={() => setEditingInstructor(inst)}
                       className="text-xs transition-colors"

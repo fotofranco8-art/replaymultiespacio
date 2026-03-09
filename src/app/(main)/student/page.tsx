@@ -251,12 +251,26 @@ export default async function StudentPage() {
       </div>
 
       {/* Historial reciente */}
-      {history.length > 0 && (
-        <div className="flex flex-col" style={{ gap: 10 }}>
-          <span style={{ color: '#52525B', fontFamily: 'Manrope, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em' }}>
-            HISTORIAL RECIENTE
-          </span>
-          {history.map((item) => (
+      <div className="flex flex-col" style={{ gap: 10 }}>
+        <span style={{ color: '#52525B', fontFamily: 'Manrope, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em' }}>
+          HISTORIAL RECIENTE
+        </span>
+        {history.length === 0 ? (
+          <div
+            className="flex items-center justify-center"
+            style={{
+              background: '#18181B',
+              border: '1px solid #27272A',
+              borderRadius: 14,
+              padding: '14px',
+            }}
+          >
+            <span style={{ color: 'rgba(255,255,255,0.28)', fontFamily: 'Manrope, sans-serif', fontSize: 12 }}>
+              Sin asistencias registradas aún
+            </span>
+          </div>
+        ) : (
+          history.map((item) => (
             <div
               key={item.classId}
               className="flex items-center"
@@ -296,9 +310,9 @@ export default async function StudentPage() {
                 {item.status}
               </span>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
     </div>
   )

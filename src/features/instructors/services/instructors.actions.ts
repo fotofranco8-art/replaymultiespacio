@@ -1,5 +1,6 @@
 'use server'
 
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMyProfile } from '@/lib/supabase/profile-helper'
@@ -29,7 +30,10 @@ export async function inviteInstructor(input: NewInstructorInput) {
   const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://replaymultiespacioartistico.vercel.app'
+
   const { data: invited, error } = await admin.auth.admin.inviteUserByEmail(input.email, {
+    redirectTo: `${siteUrl}/set-password`,
     data: {
       full_name: input.full_name,
       role: 'teacher',
@@ -76,4 +80,35 @@ export async function toggleInstructorStatus(instructorId: string, isActive: boo
   const admin = createAdminClient()
   await admin.from('profiles').update({ is_active: isActive }).eq('id', instructorId)
   revalidatePath('/admin/instructors')
+}
+
+export async function resendInviteInstructor(email: string): Promise<{ error?: string }> {
+  const profile = await getMyProfile()
+  if (!profile?.center_id) return { error: 'No se pudo obtener el centro' }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://replaymultiespacioartistico.vercel.app'
+  const admin = createAdminClient()
+
+  const { error } = await admin.auth.admin.inviteUserByEmail(email, {
+    redirectTo: `${siteUrl}/set-password`,
+  })
+
+  if (error) {
+    if (error.message?.includes('already been registered')) {
+      // El profesor ya completó el registro → enviar email de recuperación de contraseña
+      const implicitClient = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        { auth: { persistSession: false, autoRefreshToken: false, flowType: 'implicit' } }
+      )
+      const { error: recoveryError } = await implicitClient.auth.resetPasswordForEmail(email, {
+        redirectTo: `${siteUrl}/set-password`,
+      })
+      if (recoveryError) return { error: recoveryError.message ?? 'Error al enviar recuperación' }
+      return {}
+    }
+    return { error: error.message ?? 'Error al reenviar el email' }
+  }
+
+  return {}
 }

@@ -86,7 +86,7 @@ export async function inviteStudent(input: NewStudentInput) {
   const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
     input.email,
     {
-      redirectTo: `${siteUrl}/callback?type=invite`,
+      redirectTo: `${siteUrl}/set-password`,
       data: {
         full_name: input.full_name,
         role: 'student',
@@ -213,7 +213,7 @@ export async function resendInvite(email: string): Promise<{ error?: string }> {
   const admin = createAdminClient()
 
   const { error } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${siteUrl}/callback?type=invite`,
+    redirectTo: `${siteUrl}/set-password`,
   })
 
   if (error) {

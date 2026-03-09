@@ -8,8 +8,8 @@ const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope' })
 const spaceMono = Space_Mono({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-space-mono' })
 
 export const metadata: Metadata = {
-  title: 'SaaS Factory App',
-  description: 'Built with SaaS Factory',
+  title: 'Replay Multiespacio Artístico',
+  description: 'Portal de gestión y alumnos de Replay Multiespacio Artístico',
 }
 
 export default function RootLayout({

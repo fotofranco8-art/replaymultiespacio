@@ -21,15 +21,31 @@ export default function SetPasswordForm() {
   )
 
   useEffect(() => {
-    // Flujo de invitación: sesión ya establecida por /callback via exchangeCodeForSession
+    // Flujo 1: sesión ya establecida (callback previo)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setSessionReady(true)
         return
       }
 
-      // Flujo de recovery: tokens vienen en el hash del URL
-      // Formato: /set-password#access_token=xxx&refresh_token=xxx&type=recovery
+      // Flujo 2: código PKCE en query param (?code=xxx) — links de invitación
+      const searchParams = new URLSearchParams(window.location.search)
+      const code = searchParams.get('code')
+      if (code) {
+        supabase.auth.exchangeCodeForSession(code)
+          .then(({ error: codeErr }) => {
+            if (codeErr) {
+              setSessionError(codeErr.message ?? 'No se pudo verificar el enlace.')
+            } else {
+              setSessionReady(true)
+              // Limpiar query params del URL
+              window.history.replaceState(null, '', window.location.pathname)
+            }
+          })
+        return
+      }
+
+      // Flujo 3: tokens en hash del URL (#access_token=xxx) — links de recovery
       const hash = window.location.hash.substring(1)
       if (!hash) {
         setSessionError('Enlace inválido o expirado. Pedí un nuevo email al administrador.')
