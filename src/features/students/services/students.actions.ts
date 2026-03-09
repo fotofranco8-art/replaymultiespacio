@@ -204,6 +204,27 @@ export async function toggleStudentStatus(studentId: string, isActive: boolean) 
   revalidatePath('/admin/students')
 }
 
+export async function resendInvite(email: string): Promise<{ error?: string }> {
+  const profile = await getMyProfile()
+  if (!profile?.center_id) return { error: 'No se pudo obtener el centro' }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://replaymultiespacioartistico.vercel.app'
+  const admin = createAdminClient()
+
+  const { error } = await admin.auth.admin.inviteUserByEmail(email, {
+    redirectTo: `${siteUrl}/callback?type=invite`,
+  })
+
+  if (error) {
+    if (error.message?.includes('already been registered')) {
+      return { error: 'El alumno ya tiene cuenta activa. No necesita re-invitación.' }
+    }
+    return { error: error.message ?? 'Error al reenviar el email' }
+  }
+
+  return {}
+}
+
 export async function bulkInviteStudents(
   students: Array<{ full_name: string; email: string; phone?: string }>
 ): Promise<{ success: number; errors: string[] }> {
