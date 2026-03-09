@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Check, X } from 'lucide-react'
+import { Check, X, Trash2 } from 'lucide-react'
 import {
   createDiscipline,
   updateDiscipline,
   toggleDiscipline,
+  deleteDiscipline,
 } from '@/features/scheduling/services/scheduling.actions'
 import type { Discipline } from '@/features/scheduling/types'
+import { toast } from 'sonner'
 
 const COLOR_PALETTE = [
   '#06B6D4', '#3B82F6', '#6366F1', '#8B5CF6',
@@ -108,6 +110,8 @@ function DisciplineModal({
   const set = (k: keyof DisciplineFormState, v: string | boolean) =>
     setForm((f) => ({ ...f, [k]: v }))
 
+  const isEdit = !title.includes('Nueva')
+
   return (
     <div
       className="fixed inset-0 flex items-center justify-center z-50 p-4"
@@ -115,7 +119,6 @@ function DisciplineModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <div className="glass-modal rounded-2xl w-full max-w-md overflow-y-auto max-h-[90vh]">
-        {/* Header */}
         <div
           className="flex items-center justify-between px-6 pt-6 pb-4"
           style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
@@ -179,6 +182,11 @@ function DisciplineModal({
                   style={{ paddingLeft: '1.75rem' }}
                 />
               </div>
+              {isEdit && (
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                  Se aplica a todas las membresías activas
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Capacidad Máx.</label>
@@ -189,6 +197,11 @@ function DisciplineModal({
                 onChange={(e) => set('max_capacity', e.target.value)}
                 className="glass-input"
               />
+              {isEdit && (
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                  Se actualiza en plantillas y clases futuras
+                </p>
+              )}
             </div>
           </div>
 
@@ -237,11 +250,7 @@ function DisciplineModal({
 
           {/* Botones */}
           <div className="flex gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-secondary flex-1 rounded-xl py-2.5 text-sm"
-            >
+            <button type="button" onClick={onClose} className="btn-secondary flex-1 rounded-xl py-2.5 text-sm">
               Cancelar
             </button>
             <button
@@ -250,9 +259,92 @@ function DisciplineModal({
               onClick={() => onSave(form)}
               className="btn-primary flex-1 rounded-xl py-2.5 text-sm font-medium"
             >
-              {pending ? 'Guardando...' : title.includes('Nueva') ? 'Crear Disciplina' : 'Guardar cambios'}
+              {pending ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear Disciplina'}
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DeleteConfirmModal({
+  discipline,
+  templateCount,
+  futureCount,
+  studentCount,
+  onConfirm,
+  onClose,
+  pending,
+}: {
+  discipline: Discipline
+  templateCount: number
+  futureCount: number
+  studentCount: number
+  onConfirm: () => void
+  onClose: () => void
+  pending: boolean
+}) {
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center z-50 p-4"
+      style={{ background: 'rgba(0,0,0,0.70)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div
+        className="rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5"
+        style={{ background: '#18181B', border: '1px solid rgba(255,255,255,0.08)' }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.22)' }}
+          >
+            <Trash2 size={16} style={{ color: '#EF4444' }} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-white">Eliminar disciplina</p>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>Esta acción no se puede deshacer</p>
+          </div>
+        </div>
+
+        <div
+          className="rounded-xl px-4 py-3 flex items-center gap-2"
+          style={{ background: 'rgba(255,255,255,0.04)', borderLeft: `3px solid ${discipline.color}` }}
+        >
+          <span className="text-sm font-medium text-white">{discipline.name}</span>
+        </div>
+
+        <div
+          className="rounded-xl px-4 py-3 space-y-1.5"
+          style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.15)' }}
+        >
+          <p className="text-xs font-semibold" style={{ color: 'rgba(239,68,68,0.80)' }}>Se va a eliminar:</p>
+          <ul className="space-y-1 text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
+            <li>· {templateCount} plantilla{templateCount !== 1 ? 's' : ''} activa{templateCount !== 1 ? 's' : ''}</li>
+            <li>· {futureCount} clase{futureCount !== 1 ? 's' : ''} futura{futureCount !== 1 ? 's' : ''} + inscripciones</li>
+            <li>· {studentCount} membresía{studentCount !== 1 ? 's' : ''} enlazada{studentCount !== 1 ? 's' : ''} (solo el enlace, no el alumno)</li>
+          </ul>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl py-2.5 text-sm font-medium transition-colors"
+            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.60)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={onConfirm}
+            className="flex-1 rounded-xl py-2.5 text-sm font-semibold transition-opacity disabled:opacity-50"
+            style={{ background: 'rgba(239,68,68,0.18)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.30)' }}
+          >
+            {pending ? 'Eliminando...' : 'Eliminar'}
+          </button>
         </div>
       </div>
     </div>
@@ -262,46 +354,72 @@ function DisciplineModal({
 interface Props {
   disciplines: Discipline[]
   templateCounts: Record<string, number>
+  futureCounts: Record<string, number>
+  studentCounts: Record<string, number>
 }
 
-export function DisciplinesPageClient({ disciplines, templateCounts }: Props) {
+export function DisciplinesPageClient({ disciplines, templateCounts, futureCounts, studentCounts }: Props) {
   const [showCreate, setShowCreate] = useState(false)
   const [editingDiscipline, setEditingDiscipline] = useState<Discipline | null>(null)
+  const [deletingDiscipline, setDeletingDiscipline] = useState<Discipline | null>(null)
   const [pending, startTransition] = useTransition()
 
   function handleCreate(form: DisciplineFormState) {
     startTransition(async () => {
-      await createDiscipline({
-        name: form.name,
-        color: form.color,
-        type: form.type,
-        monthly_price: Number(form.monthly_price),
-        max_capacity: Number(form.max_capacity),
-        modality: form.modality,
-        description: form.description || undefined,
-      })
-      setShowCreate(false)
+      try {
+        await createDiscipline({
+          name: form.name,
+          color: form.color,
+          type: form.type,
+          monthly_price: Number(form.monthly_price),
+          max_capacity: Number(form.max_capacity),
+          modality: form.modality,
+          description: form.description || undefined,
+        })
+        toast.success('Disciplina creada')
+        setShowCreate(false)
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : 'Error al crear disciplina')
+      }
     })
   }
 
   function handleUpdate(form: DisciplineFormState) {
     if (!editingDiscipline) return
     startTransition(async () => {
-      await updateDiscipline(editingDiscipline.id, {
-        name: form.name,
-        color: form.color,
-        type: form.type,
-        monthly_price: Number(form.monthly_price),
-        max_capacity: Number(form.max_capacity),
-        modality: form.modality,
-        description: form.description || undefined,
-      })
-      setEditingDiscipline(null)
+      try {
+        await updateDiscipline(editingDiscipline.id, {
+          name: form.name,
+          color: form.color,
+          type: form.type,
+          monthly_price: Number(form.monthly_price),
+          max_capacity: Number(form.max_capacity),
+          modality: form.modality,
+          description: form.description || undefined,
+        })
+        toast.success('Disciplina actualizada')
+        setEditingDiscipline(null)
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : 'Error al actualizar disciplina')
+      }
+    })
+  }
+
+  function handleDelete() {
+    if (!deletingDiscipline) return
+    startTransition(async () => {
+      try {
+        await deleteDiscipline(deletingDiscipline.id)
+        toast.success('Disciplina eliminada')
+        setDeletingDiscipline(null)
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : 'Error al eliminar disciplina')
+      }
     })
   }
 
   const glassCard = {
-    background: 'rgba(255,255,255,0.04)',
+    background: 'rgba(255,255,255,0.03)',
     backdropFilter: 'blur(12px)',
     WebkitBackdropFilter: 'blur(12px)',
     border: '1px solid rgba(255,255,255,0.07)',
@@ -317,12 +435,11 @@ export function DisciplinesPageClient({ disciplines, templateCounts }: Props) {
           >
             Disciplinas
           </h1>
-          <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.40)' }}>{disciplines.length} configuradas en el centro</p>
+          <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.40)' }}>
+            {disciplines.length} configurada{disciplines.length !== 1 ? 's' : ''} en el centro
+          </p>
         </div>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="btn-primary px-4 py-2 rounded-xl text-sm"
-        >
+        <button onClick={() => setShowCreate(true)} className="btn-primary px-4 py-2 rounded-xl text-sm">
           + Nueva disciplina
         </button>
       </div>
@@ -333,94 +450,125 @@ export function DisciplinesPageClient({ disciplines, templateCounts }: Props) {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {disciplines.map((d) => (
-            <div
-              key={d.id}
-              className="rounded-2xl overflow-hidden flex flex-col"
-              style={glassCard}
-            >
-              {/* Color strip */}
-              <div className="h-1.5 w-full" style={{ backgroundColor: d.color }} />
+          {disciplines.map((d) => {
+            const tCount = templateCounts[d.id] ?? 0
+            const fCount = futureCounts[d.id] ?? 0
+            const sCount = studentCounts[d.id] ?? 0
 
-              <div className="p-5 flex flex-col gap-3 flex-1">
-                {/* Name + status */}
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                    <p className="font-medium text-white text-sm leading-tight">{d.name}</p>
+            return (
+              <div
+                key={d.id}
+                className="rounded-2xl overflow-hidden flex flex-col"
+                style={{ ...glassCard, borderLeft: `3px solid ${d.color}` }}
+              >
+                <div className="p-5 flex flex-col gap-3 flex-1">
+                  {/* Nombre + estado */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                      <p className="font-semibold text-white text-sm leading-tight truncate">{d.name}</p>
+                    </div>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
+                      style={{
+                        background: d.is_active ? 'rgba(34,197,94,0.13)' : 'rgba(255,255,255,0.07)',
+                        color: d.is_active ? '#4ade80' : 'rgba(255,255,255,0.35)',
+                      }}
+                    >
+                      {d.is_active ? 'Activa' : 'Inactiva'}
+                    </span>
                   </div>
-                  <span
-                    className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
-                    style={{
-                      background: d.is_active ? 'rgba(34,197,94,0.13)' : 'rgba(255,255,255,0.07)',
-                      color: d.is_active ? '#4ade80' : 'rgba(255,255,255,0.35)',
-                    }}
-                  >
-                    {d.is_active ? 'Activa' : 'Inactiva'}
-                  </span>
-                </div>
 
-                {/* Badges */}
-                <div className="flex flex-wrap gap-1.5">
-                  <span
-                    className="text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }}
-                  >
-                    {d.type === 'grupal' ? 'Grupal' : 'Individual'}
-                  </span>
-                  <span
-                    className="text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }}
-                  >
-                    {d.modality === 'anual' ? '🔄 Anual' : '🎯 Seminario'}
-                  </span>
-                </div>
+                  {/* Badges tipo + modalidad */}
+                  <div className="flex flex-wrap gap-1.5">
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                      style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      {d.type === 'grupal' ? 'Grupal' : 'Individual'}
+                    </span>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                      style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      {d.modality === 'anual' ? '🔄 Anual' : '🎯 Seminario'}
+                    </span>
+                  </div>
 
-                {/* Price + capacity */}
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-semibold text-white">
-                    ${Number(d.monthly_price).toLocaleString('es-AR')}
-                    <span className="text-xs font-normal" style={{ color: 'rgba(255,255,255,0.38)' }}>/mes</span>
-                  </span>
-                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>Cap. {d.max_capacity}</span>
-                </div>
+                  {/* Descripción preview */}
+                  {d.description && (
+                    <p
+                      className="text-xs leading-relaxed"
+                      style={{
+                        color: 'rgba(255,255,255,0.40)',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      } as React.CSSProperties}
+                    >
+                      {d.description}
+                    </p>
+                  )}
 
-                {/* Template count */}
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                  {templateCounts[d.id]
-                    ? `${templateCounts[d.id]} plantilla${templateCounts[d.id] === 1 ? '' : 's'} activa${templateCounts[d.id] === 1 ? '' : 's'}`
-                    : 'Sin plantillas'}
-                </p>
+                  {/* Precio + capacidad */}
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-white text-sm">
+                      ${Number(d.monthly_price).toLocaleString('es-AR')}
+                      <span className="text-xs font-normal" style={{ color: 'rgba(255,255,255,0.38)' }}>/mes</span>
+                    </span>
+                    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>Cap. {d.max_capacity}</span>
+                  </div>
 
-                {/* Actions */}
-                <div
-                  className="flex gap-2 pt-2 mt-auto"
-                  style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  <button
-                    onClick={() => setEditingDiscipline(d)}
-                    className="flex-1 text-xs py-1 transition-colors"
-                    style={{ color: 'rgba(255,255,255,0.35)' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.70)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+                  {/* Stats row */}
+                  <div className="flex items-center gap-1 text-xs" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                    <span>{sCount} alumno{sCount !== 1 ? 's' : ''}</span>
+                    <span>·</span>
+                    <span>{tCount} plantilla{tCount !== 1 ? 's' : ''}</span>
+                    <span>·</span>
+                    <span>{fCount} próx.</span>
+                  </div>
+
+                  {/* Acciones */}
+                  <div
+                    className="flex pt-2 mt-auto"
+                    style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
                   >
-                    Editar
-                  </button>
-                  <div className="w-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-                  <button
-                    onClick={() => startTransition(() => toggleDiscipline(d.id, !d.is_active))}
-                    disabled={pending}
-                    className="flex-1 text-xs py-1 transition-colors disabled:opacity-40"
-                    style={{ color: 'rgba(255,255,255,0.35)' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.70)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
-                  >
-                    {d.is_active ? 'Desactivar' : 'Activar'}
-                  </button>
+                    <button
+                      onClick={() => setEditingDiscipline(d)}
+                      className="flex-1 text-xs py-1.5 transition-colors rounded-lg"
+                      style={{ color: 'rgba(255,255,255,0.35)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.75)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+                    >
+                      Editar
+                    </button>
+                    <div className="w-px my-1" style={{ background: 'rgba(255,255,255,0.07)' }} />
+                    <button
+                      onClick={() => startTransition(() => toggleDiscipline(d.id, !d.is_active))}
+                      disabled={pending}
+                      className="flex-1 text-xs py-1.5 transition-colors rounded-lg disabled:opacity-40"
+                      style={{ color: 'rgba(255,255,255,0.35)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.75)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+                    >
+                      {d.is_active ? 'Desactivar' : 'Activar'}
+                    </button>
+                    <div className="w-px my-1" style={{ background: 'rgba(255,255,255,0.07)' }} />
+                    <button
+                      onClick={() => setDeletingDiscipline(d)}
+                      className="flex-1 text-xs py-1.5 transition-colors rounded-lg"
+                      style={{ color: 'rgba(239,68,68,0.50)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#EF4444')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(239,68,68,0.50)')}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
@@ -449,6 +597,18 @@ export function DisciplinesPageClient({ disciplines, templateCounts }: Props) {
           }}
           onSave={handleUpdate}
           onClose={() => setEditingDiscipline(null)}
+          pending={pending}
+        />
+      )}
+
+      {deletingDiscipline && (
+        <DeleteConfirmModal
+          discipline={deletingDiscipline}
+          templateCount={templateCounts[deletingDiscipline.id] ?? 0}
+          futureCount={futureCounts[deletingDiscipline.id] ?? 0}
+          studentCount={studentCounts[deletingDiscipline.id] ?? 0}
+          onConfirm={handleDelete}
+          onClose={() => setDeletingDiscipline(null)}
           pending={pending}
         />
       )}

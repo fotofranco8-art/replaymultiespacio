@@ -14,6 +14,57 @@ function revalidateAll() {
   revalidatePath('/admin/calendar')
 }
 
+export async function getDisciplineStats(): Promise<{
+  futureCounts: Record<string, number>
+  studentCounts: Record<string, number>
+}> {
+  const supabase = await createClient()
+  const profile = await getMyProfile()
+  if (!profile?.center_id) return { futureCounts: {}, studentCounts: {} }
+
+  const today = new Date().toISOString().split('T')[0]
+
+  const [{ data: classes }, { data: memberships }] = await Promise.all([
+    supabase
+      .from('classes')
+      .select('discipline_id')
+      .eq('center_id', profile.center_id)
+      .gte('scheduled_date', today)
+      .eq('is_cancelled', false),
+    supabase
+      .from('memberships')
+      .select('discipline_id')
+      .eq('center_id', profile.center_id)
+      .eq('status', 'active'),
+  ])
+
+  const futureCounts: Record<string, number> = {}
+  for (const c of classes ?? []) {
+    if (c.discipline_id) futureCounts[c.discipline_id] = (futureCounts[c.discipline_id] ?? 0) + 1
+  }
+
+  const studentCounts: Record<string, number> = {}
+  for (const m of memberships ?? []) {
+    if (m.discipline_id) studentCounts[m.discipline_id] = (studentCounts[m.discipline_id] ?? 0) + 1
+  }
+
+  return { futureCounts, studentCounts }
+}
+
+export async function deleteDiscipline(id: string) {
+  const supabase = await createClient()
+  const today = new Date().toISOString().split('T')[0]
+
+  // Borrar clases futuras (cascade elimina class_enrollments)
+  await supabase.from('classes').delete().eq('discipline_id', id).gte('scheduled_date', today)
+
+  // Hard delete de la disciplina (cascade elimina class_templates)
+  const { error } = await supabase.from('disciplines').delete().eq('id', id)
+  if (error) throw error
+
+  revalidateAll()
+}
+
 export async function getDisciplines(): Promise<Discipline[]> {
   const supabase = await createClient()
   const profile = await getMyProfile()
@@ -66,6 +117,8 @@ export async function updateDiscipline(id: string, input: {
   description?: string
 }) {
   const supabase = await createClient()
+  const today = new Date().toISOString().split('T')[0]
+
   const { error } = await supabase
     .from('disciplines')
     .update({
@@ -80,6 +133,24 @@ export async function updateDiscipline(id: string, input: {
     .eq('id', id)
 
   if (error) throw error
+
+  // Cascade capacidad → plantillas activas + clases futuras
+  if (input.max_capacity !== undefined) {
+    await supabase.from('class_templates')
+      .update({ max_capacity: input.max_capacity })
+      .eq('discipline_id', id).eq('is_active', true)
+    await supabase.from('classes')
+      .update({ max_capacity: input.max_capacity })
+      .eq('discipline_id', id).gte('scheduled_date', today)
+  }
+
+  // Cascade precio → membresías activas de esta disciplina
+  if (input.monthly_price !== undefined) {
+    await supabase.from('memberships')
+      .update({ monthly_fee: input.monthly_price })
+      .eq('discipline_id', id).eq('status', 'active')
+  }
+
   revalidateAll()
 }
 
