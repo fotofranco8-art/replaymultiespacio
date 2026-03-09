@@ -69,7 +69,7 @@ export function MonthCalendarGrid({ classes, year, month, onSelectClass }: Props
                         }`}
                         style={{ backgroundColor: cls.disciplines?.color ?? '#6366f1' }}
                       >
-                        {cls.start_time.slice(0, 5)} {cls.disciplines?.name}
+                        {cls.start_time.slice(0, 5)} {cls.disciplines?.name}{cls.room ? ` · ${cls.room}` : ''}
                       </button>
                     ))}
                   </div>
