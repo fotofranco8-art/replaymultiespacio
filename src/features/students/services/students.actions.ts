@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { getMyProfile } from '@/lib/supabase/profile-helper'
 import { revalidatePath } from 'next/cache'
 import type { NewStudentInput, StudentWithMembership, UpdateStudentInput } from '../types'
@@ -217,7 +218,13 @@ export async function resendInvite(email: string): Promise<{ error?: string }> {
 
   if (error) {
     if (error.message?.includes('already been registered')) {
-      return { error: 'El alumno ya tiene cuenta activa. No necesita re-invitación.' }
+      // El alumno ya completó el registro → enviar recuperación de contraseña
+      const supabase = await createClient()
+      const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${siteUrl}/callback?type=invite`,
+      })
+      if (recoveryError) return { error: recoveryError.message ?? 'Error al enviar recuperación' }
+      return {}
     }
     return { error: error.message ?? 'Error al reenviar el email' }
   }
