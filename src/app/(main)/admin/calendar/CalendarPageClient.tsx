@@ -7,6 +7,7 @@ import { MonthCalendarGrid } from '@/features/scheduling/components/MonthCalenda
 import { DailyAgendaView } from '@/features/scheduling/components/DailyAgendaView'
 import { NewAdHocClassForm } from '@/features/scheduling/components/NewAdHocClassForm'
 import { cancelClass } from '@/features/scheduling/services/scheduling.actions'
+import { rotateRoomsForMonth } from '@/features/rooms/services/rooms.actions'
 import type { CalendarClass } from '@/features/scheduling/types'
 import type { Room } from '@/features/rooms/types'
 
@@ -37,6 +38,8 @@ export function CalendarPageClient({
   const [selected, setSelected] = useState<CalendarClass | null>(null)
   const [cancelling, startCancel] = useTransition()
   const [showNewClass, setShowNewClass] = useState(false)
+  const [syncing, startSync] = useTransition()
+  const [syncResult, setSyncResult] = useState<{ assigned: number; skipped: number } | null>(null)
 
   const currentDate = new Date(date + 'T00:00:00')
   const dateLabel = currentDate.toLocaleDateString('es-AR', {
@@ -143,6 +146,24 @@ export function CalendarPageClient({
               >
                 Proyectar mes
               </button>
+              <button
+                onClick={() =>
+                  startSync(async () => {
+                    const result = await rotateRoomsForMonth(year, month)
+                    setSyncResult(result)
+                    router.refresh()
+                  })
+                }
+                disabled={syncing}
+                className="px-4 py-1.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
+                style={{
+                  background: 'rgba(255,255,255,0.07)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: syncing ? 'rgba(255,255,255,0.40)' : 'rgba(255,255,255,0.80)',
+                }}
+              >
+                {syncing ? 'Sincronizando…' : '⟳ Sincronizar aulas'}
+              </button>
             </>
           ) : (
             <>
@@ -159,6 +180,27 @@ export function CalendarPageClient({
           )}
         </div>
       </div>
+
+      {/* Resultado de sincronización de aulas */}
+      {syncResult && (
+        <div
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm mb-4"
+          style={{ background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.20)', color: '#4ade80' }}
+        >
+          <span>✓</span>
+          <span>
+            {syncResult.assigned} aula{syncResult.assigned !== 1 ? 's' : ''} asignada{syncResult.assigned !== 1 ? 's' : ''}
+            {syncResult.skipped > 0 ? `, ${syncResult.skipped} sin aula disponible` : ''}
+          </span>
+          <button
+            onClick={() => setSyncResult(null)}
+            className="ml-auto"
+            style={{ color: 'rgba(74,222,128,0.60)' }}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* Content */}
       {view === 'monthly' ? (
