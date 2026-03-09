@@ -133,16 +133,18 @@ export async function updateClassTemplate(id: string, input: NewTemplateInput) {
   if (error) throw error
 
   // Reemplazar alumnos asignados
-  await supabase.from('class_template_students').delete().eq('template_id', id)
+  const { error: deleteError } = await supabase.from('class_template_students').delete().eq('template_id', id)
+  if (deleteError) throw deleteError
 
   if (student_ids && student_ids.length > 0) {
-    await supabase.from('class_template_students').insert(
+    const { error: studentsError } = await supabase.from('class_template_students').insert(
       student_ids.map((student_id) => ({
         template_id: id,
         student_id,
         center_id: profile.center_id!,
       }))
     )
+    if (studentsError) throw studentsError
   }
 
   revalidateAll()
@@ -163,15 +165,16 @@ export async function createClassTemplate(input: NewTemplateInput) {
 
   if (error) throw error
 
-  // Save assigned students
+  // Guardar alumnos asignados
   if (student_ids && student_ids.length > 0 && data?.id) {
-    await supabase.from('class_template_students').insert(
+    const { error: studentsError } = await supabase.from('class_template_students').insert(
       student_ids.map((student_id) => ({
         template_id: data.id,
         student_id,
         center_id: profile.center_id!,
       }))
     )
+    if (studentsError) throw studentsError
   }
 
   revalidateAll()
