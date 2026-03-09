@@ -72,25 +72,34 @@ export async function createRoom(input: NewRoomInput) {
 
 export async function updateRoom(id: string, updates: Partial<NewRoomInput>) {
   const supabase = await createClient()
-  const { error } = await supabase.from('rooms').update(updates).eq('id', id)
+  const profile = await getMyProfile()
+  if (!profile?.center_id) throw new Error('No center found')
+  const { error } = await supabase.from('rooms').update(updates).eq('id', id).eq('center_id', profile.center_id)
   if (error) throw error
   revalidatePath('/admin/rooms')
 }
 
 export async function toggleRoom(id: string, isActive: boolean) {
   const supabase = await createClient()
-  await supabase.from('rooms').update({ is_active: isActive }).eq('id', id)
+  const profile = await getMyProfile()
+  if (!profile?.center_id) return
+  await supabase.from('rooms').update({ is_active: isActive }).eq('id', id).eq('center_id', profile.center_id)
   revalidatePath('/admin/rooms')
 }
 
 export async function deleteRoom(id: string) {
   const supabase = await createClient()
-  const { error } = await supabase.from('rooms').delete().eq('id', id)
+  const profile = await getMyProfile()
+  if (!profile?.center_id) throw new Error('No center found')
+  const { error } = await supabase.from('rooms').delete().eq('id', id).eq('center_id', profile.center_id)
   if (error) throw error
   revalidatePath('/admin/rooms')
 }
 
-// Calcula el número de semana ISO de una fecha (fallback para clases ad-hoc)
+type RoomEntry = { name: string; type: string }
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
+
+// Calcula el número de semana ISO (fallback para clases ad-hoc sin template)
 function getISOWeek(d: Date): number {
   const date = new Date(d)
   date.setHours(0, 0, 0, 0)
@@ -99,7 +108,7 @@ function getISOWeek(d: Date): number {
   return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
 }
 
-// Devuelve los lunes que cubren el mes indicado (incluyendo el lunes anterior si el mes no empieza en lunes)
+// Devuelve los lunes que cubren el mes (incluye el lunes previo si el mes no empieza en lunes)
 function getMondaysInMonth(year: number, month: number): string[] {
   const result: string[] = []
   const firstDay = new Date(year, month - 1, 1)
@@ -115,41 +124,41 @@ function getMondaysInMonth(year: number, month: number): string[] {
   return result
 }
 
-// Asigna aulas a todas las clases sin aula de la semana indicada.
-// Rotación POR PLANTILLA: cada class_template rota de forma independiente
-// basándose en el aula que tuvo en la semana anterior.
-// weekStartDate = 'YYYY-MM-DD' del lunes de la semana
-export async function rotateRoomsForWeek(
-  weekStartDate: string
-): Promise<{ assigned: number; skipped: number }> {
-  const supabase = await createClient()
-  const profile = await getMyProfile()
-  if (!profile?.center_id) return { assigned: 0, skipped: 0 }
+// Carga aulas activas del centro (reutilizable para evitar queries duplicadas)
+async function loadActiveRooms(supabase: SupabaseServerClient, centerId: string) {
+  const { data } = await supabase
+    .from('rooms')
+    .select('name, type')
+    .eq('center_id', centerId)
+    .eq('is_active', true)
+    .order('name')
+  const rooms = (data ?? []) as RoomEntry[]
+  return {
+    grupalRooms: rooms.filter((r) => r.type === 'grupal'),
+    individualRooms: rooms.filter((r) => r.type === 'individual'),
+  }
+}
 
+// Núcleo de rotación para una semana.
+// Recibe el cliente y aulas ya cargadas — se puede llamar múltiples veces sin re-fetching.
+async function _rotateWeekCore(
+  supabase: SupabaseServerClient,
+  centerId: string,
+  weekStartDate: string,
+  grupalRooms: RoomEntry[],
+  individualRooms: RoomEntry[]
+): Promise<{ assigned: number; skipped: number }> {
   const weekStart = new Date(weekStartDate + 'T00:00:00')
   const weekEnd = new Date(weekStart)
   weekEnd.setDate(weekEnd.getDate() + 6)
   const weekEndDate = weekEnd.toISOString().split('T')[0]
   const weekNum = getISOWeek(weekStart)
 
-  // Cargar aulas activas del centro
-  const { data: allRooms } = await supabase
-    .from('rooms')
-    .select('name, type')
-    .eq('center_id', profile.center_id)
-    .eq('is_active', true)
-    .order('name')
-
-  const grupalRooms = (allRooms ?? []).filter((r) => r.type === 'grupal')
-  const individualRooms = (allRooms ?? []).filter((r) => r.type === 'individual')
-
-  if (grupalRooms.length === 0 && individualRooms.length === 0) return { assigned: 0, skipped: 0 }
-
   // Clases sin aula asignada en el rango, con template_id y tipo de disciplina
   const { data: classes } = await supabase
     .from('classes')
     .select('id, scheduled_date, start_time, end_time, template_id, disciplines(type)')
-    .eq('center_id', profile.center_id)
+    .eq('center_id', centerId)
     .gte('scheduled_date', weekStartDate)
     .lte('scheduled_date', weekEndDate)
     .is('room', null)
@@ -169,7 +178,7 @@ export async function rotateRoomsForWeek(
       .not('room', 'is', null)
       .lt('scheduled_date', weekStartDate)
       .order('scheduled_date', { ascending: false })
-      .limit(templateIds.length * 4) // máximo 4 semanas de historial por plantilla
+      .limit(templateIds.length * 4)
 
     for (const row of prevRows ?? []) {
       if (row.template_id && !prevAssignments.has(row.template_id) && row.room) {
@@ -179,8 +188,7 @@ export async function rotateRoomsForWeek(
   }
 
   // --- Determinar el aula de esta semana para cada plantilla grupal ---
-  // Cada plantilla avanza una posición respecto al aula que tuvo la última vez
-  const weekAssignments = new Map<string, string>() // template_id → aula asignada esta semana
+  const weekAssignments = new Map<string, string>()
 
   for (const templateId of templateIds) {
     const sampleCls = classes.find((c) => c.template_id === templateId)
@@ -189,17 +197,17 @@ export async function rotateRoomsForWeek(
 
     if (discType === 'grupal' && grupalRooms.length > 0) {
       const lastRoom = prevAssignments.get(templateId)
-      const lastIdx = grupalRooms.findIndex((r) => r.name === lastRoom) // -1 si no tiene historial
+      const lastIdx = grupalRooms.findIndex((r) => r.name === lastRoom)
       const nextIdx = (lastIdx + 1) % grupalRooms.length
       weekAssignments.set(templateId, grupalRooms[nextIdx].name)
     }
   }
 
-  // --- Mapa de conflictos de horario (aulas ya ocupadas en cada franja) ---
+  // --- Mapa de conflictos de horario ---
   const { data: occupiedClasses } = await supabase
     .from('classes')
     .select('scheduled_date, start_time, room')
-    .eq('center_id', profile.center_id)
+    .eq('center_id', centerId)
     .gte('scheduled_date', weekStartDate)
     .lte('scheduled_date', weekEndDate)
     .not('room', 'is', null)
@@ -222,14 +230,11 @@ export async function rotateRoomsForWeek(
 
     if (discType === 'grupal') {
       if (cls.template_id && weekAssignments.has(cls.template_id)) {
-        // Aula determinada por el historial de esta plantilla
         roomName = weekAssignments.get(cls.template_id)!
       } else if (grupalRooms.length > 0) {
-        // Fallback para clases ad-hoc sin template_id
         roomName = grupalRooms[weekNum % grupalRooms.length].name
       }
     } else {
-      // Disciplina individual: preferir aula grupal libre en ese horario
       const key = `${cls.scheduled_date}|${cls.start_time}`
       const occupied = conflictMap.get(key) ?? new Set()
       const freeGrupal = grupalRooms.find((r) => !occupied.has(r.name))
@@ -251,28 +256,52 @@ export async function rotateRoomsForWeek(
     }
   }
 
-  revalidatePath('/admin/rooms')
-  revalidatePath('/admin/schedule')
-  revalidatePath('/admin/calendar')
   return { assigned, skipped }
 }
 
-// Sincroniza aulas para todas las semanas del mes de forma secuencial.
-// Al ser secuencial, cada semana puede leer el historial de la anterior.
+// Asigna aulas para una semana (carga profile y aulas una vez)
+export async function rotateRoomsForWeek(
+  weekStartDate: string
+): Promise<{ assigned: number; skipped: number }> {
+  const supabase = await createClient()
+  const profile = await getMyProfile()
+  if (!profile?.center_id) return { assigned: 0, skipped: 0 }
+
+  const { grupalRooms, individualRooms } = await loadActiveRooms(supabase, profile.center_id)
+  if (grupalRooms.length === 0 && individualRooms.length === 0) return { assigned: 0, skipped: 0 }
+
+  const result = await _rotateWeekCore(supabase, profile.center_id, weekStartDate, grupalRooms, individualRooms)
+  revalidatePath('/admin/rooms')
+  revalidatePath('/admin/schedule')
+  revalidatePath('/admin/calendar')
+  return result
+}
+
+// Sincroniza aulas para todo el mes — profile y aulas se cargan UNA sola vez
+// para todas las semanas (en vez de N × getMyProfile + N × rooms query).
 export async function rotateRoomsForMonth(
   year: number,
   month: number
 ): Promise<{ assigned: number; skipped: number }> {
+  const supabase = await createClient()
+  const profile = await getMyProfile()
+  if (!profile?.center_id) return { assigned: 0, skipped: 0 }
+
+  const { grupalRooms, individualRooms } = await loadActiveRooms(supabase, profile.center_id)
+  if (grupalRooms.length === 0 && individualRooms.length === 0) return { assigned: 0, skipped: 0 }
+
   const mondays = getMondaysInMonth(year, month)
   let totalAssigned = 0
   let totalSkipped = 0
 
   for (const monday of mondays) {
-    const { assigned, skipped } = await rotateRoomsForWeek(monday)
+    const { assigned, skipped } = await _rotateWeekCore(supabase, profile.center_id, monday, grupalRooms, individualRooms)
     totalAssigned += assigned
     totalSkipped += skipped
   }
 
+  revalidatePath('/admin/rooms')
+  revalidatePath('/admin/schedule')
   revalidatePath('/admin/calendar')
   return { assigned: totalAssigned, skipped: totalSkipped }
 }
