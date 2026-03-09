@@ -1,7 +1,7 @@
 'use server'
 
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
 import { getMyProfile } from '@/lib/supabase/profile-helper'
 import { revalidatePath } from 'next/cache'
 import type { NewStudentInput, StudentWithMembership, UpdateStudentInput } from '../types'
@@ -218,10 +218,18 @@ export async function resendInvite(email: string): Promise<{ error?: string }> {
 
   if (error) {
     if (error.message?.includes('already been registered')) {
-      // El alumno ya completó el registro → enviar recuperación de contraseña
-      const supabase = await createClient()
-      const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${siteUrl}/callback?type=invite`,
+      // El alumno ya completó el registro → enviar email de recuperación de contraseña.
+      // IMPORTANTE: resetPasswordForEmail usa PKCE en el cliente SSR, lo que guarda el
+      // verificador en las cookies del browser del ADMIN. El alumno no tiene ese verificador
+      // en su browser, por lo que el intercambio falla. Solución: usar flowType:'implicit'
+      // para no generar PKCE → Supabase envía el link con tokens en el hash del URL.
+      const implicitClient = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        { auth: { persistSession: false, autoRefreshToken: false, flowType: 'implicit' } }
+      )
+      const { error: recoveryError } = await implicitClient.auth.resetPasswordForEmail(email, {
+        redirectTo: `${siteUrl}/set-password`,
       })
       if (recoveryError) return { error: recoveryError.message ?? 'Error al enviar recuperación' }
       return {}

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
 import { setPassword } from '@/features/auth/services/auth.actions'
 
 export default function SetPasswordForm() {
@@ -8,6 +9,54 @@ export default function SetPasswordForm() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState('')
   const [isPending, startTransition] = useTransition()
+
+  // Estado de sesión para el flujo de recovery (hash fragment)
+  const [sessionReady, setSessionReady] = useState(false)
+  const [sessionError, setSessionError] = useState('')
+
+  useEffect(() => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
+    // Primero verificar si ya hay sesión activa (flujo de invitación via /callback)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setSessionReady(true)
+        return
+      }
+
+      // Flujo de recovery: leer tokens del hash fragment del URL
+      // URL esperada: /set-password#access_token=xxx&refresh_token=xxx&type=recovery
+      const hash = window.location.hash.substring(1)
+      if (!hash) {
+        setSessionError('Enlace inválido o expirado. Pedí un nuevo email.')
+        return
+      }
+
+      const params = new URLSearchParams(hash)
+      const accessToken = params.get('access_token')
+      const refreshToken = params.get('refresh_token')
+
+      if (!accessToken || !refreshToken) {
+        setSessionError('Enlace inválido o expirado. Pedí un nuevo email.')
+        return
+      }
+
+      // Establecer sesión desde los tokens del hash
+      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(({ error: sessionErr }) => {
+          if (sessionErr) {
+            setSessionError(sessionErr.message ?? 'No se pudo verificar el enlace.')
+          } else {
+            setSessionReady(true)
+            // Limpiar el hash del URL para que no quede expuesto
+            window.history.replaceState(null, '', window.location.pathname)
+          }
+        })
+    })
+  }, [])
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -17,6 +66,30 @@ export default function SetPasswordForm() {
       const result = await setPassword(formData)
       if (result?.error) setError(result.error)
     })
+  }
+
+  // Cargando sesión
+  if (!sessionReady && !sessionError) {
+    return (
+      <div className="w-full flex justify-center py-8">
+        <div
+          className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
+          style={{ borderColor: 'rgba(255,255,255,0.2)', borderTopColor: '#FF2D78' }}
+        />
+      </div>
+    )
+  }
+
+  // Sesión inválida o expirada
+  if (sessionError) {
+    return (
+      <div
+        className="rounded-xl px-4 py-3 text-sm text-center"
+        style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)', color: '#f87171' }}
+      >
+        {sessionError}
+      </div>
+    )
   }
 
   return (
