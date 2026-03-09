@@ -32,8 +32,13 @@ export default function ScanPage() {
       return
     }
 
-    const res = await validateAndCheckin(token)
-    setResult(res)
+    try {
+      const res = await validateAndCheckin(token)
+      setResult(res)
+    } catch (err) {
+      console.error('[scan] validateAndCheckin error:', err)
+      setResult({ success: false, message: 'Error de conexión. Intentá de nuevo.' })
+    }
     setState('result')
   }
 

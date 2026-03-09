@@ -120,6 +120,7 @@ export async function validateAndCheckin(token: string): Promise<CheckinResult> 
   const { error } = await supabase.from('attendance').insert({
     class_id: activeClass.id,
     student_id: user.id,
+    center_id: qrToken.center_id,
   })
 
   if (error) return { success: false, message: 'Error al registrar asistencia' }
