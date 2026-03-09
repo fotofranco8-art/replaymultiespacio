@@ -9,9 +9,9 @@ function BottomNav() {
   const tabs = [
     {
       href: '/student',
-      label: 'HOME',
+      label: 'Inicio',
       icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
           <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
@@ -22,20 +22,20 @@ function BottomNav() {
       href: '/student/scan',
       label: 'QR',
       icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="3" width="7" height="7" />
-          <rect x="14" y="3" width="7" height="7" />
-          <rect x="3" y="14" width="7" height="7" />
-          <rect x="14" y="14" width="3" height="3" />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="3" height="3" rx="0.5" />
         </svg>
       ),
       exact: false,
     },
     {
       href: '/student/profile',
-      label: 'PERFIL',
+      label: 'Perfil',
       icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
@@ -45,15 +45,16 @@ function BottomNav() {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-[21px]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-5 px-5">
       <div
-        className="flex items-center gap-1 px-3 py-2 w-full"
+        className="flex items-center gap-1 px-2 py-2 w-full"
         style={{
-          background: 'rgba(24,24,27,0.94)',
-          backdropFilter: 'blur(12px)',
-          borderRadius: '36px',
-          border: '1px solid rgba(255,45,120,0.18)',
-          height: '62px',
+          background: 'rgba(7,5,15,0.88)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderRadius: '28px',
+          border: '1px solid rgba(255,255,255,0.08)',
+          maxWidth: '400px',
         }}
       >
         {tabs.map((tab) => {
@@ -62,14 +63,14 @@ function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              className="flex flex-col items-center justify-center gap-0.5 px-5 py-1 rounded-3xl transition-all flex-1"
+              className="flex flex-col items-center justify-center gap-1 py-2 rounded-2xl transition-all flex-1 cursor-pointer"
               style={{
-                color: isActive ? '#FF2D78' : '#A1A1AA',
-                background: isActive ? 'rgba(255,45,120,0.12)' : 'rgba(255,255,255,0.05)',
+                color: isActive ? '#FF2D78' : 'rgba(255,255,255,0.35)',
+                background: isActive ? 'rgba(255,45,120,0.12)' : 'transparent',
               }}
             >
               {tab.icon}
-              <span className="font-body text-[10px] font-medium leading-none tracking-wide">{tab.label}</span>
+              <span style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.02em', lineHeight: 1 }}>{tab.label}</span>
             </Link>
           )
         })}
@@ -82,12 +83,12 @@ function StatusBar() {
   return (
     <div
       className="flex items-center justify-between px-6"
-      style={{ height: '62px' }}
+      style={{ height: '44px' }}
     >
-      <span className="font-semibold text-[15px] text-white" style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}>
+      <span className="font-semibold text-sm text-white" style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}>
         9:41
       </span>
-      <div className="flex items-center gap-1.5 text-white/80">
+      <div className="flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.75)' }}>
         {/* Signal */}
         <svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor">
           <rect x="0" y="8" width="3" height="4" rx="1" />
@@ -115,9 +116,11 @@ function StatusBar() {
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="pb-24">
+    <div style={{ background: '#07050F', minHeight: '100vh' }}>
       <StatusBar />
-      {children}
+      <div className="pb-28">
+        {children}
+      </div>
       <BottomNav />
     </div>
   )

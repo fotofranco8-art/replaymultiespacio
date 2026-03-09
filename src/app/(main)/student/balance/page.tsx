@@ -14,6 +14,13 @@ async function getActiveMembership(studentId: string) {
   return data
 }
 
+const glassCard = {
+  background: 'rgba(255,255,255,0.04)',
+  backdropFilter: 'blur(12px)',
+  WebkitBackdropFilter: 'blur(12px)',
+  border: '1px solid rgba(255,255,255,0.07)',
+}
+
 export default async function StudentBalancePage() {
   const profile = await getProfile()
   if (!profile) return null
@@ -27,82 +34,113 @@ export default async function StudentBalancePage() {
   const classesPerMonth = membership?.classes_per_month ?? 0
 
   return (
-    <div className="min-h-screen p-5" style={{ background: '#0A0A0A' }}>
-      <div className="max-w-sm mx-auto space-y-5">
+    <div className="min-h-screen" style={{ background: '#07050F' }}>
+      <div className="max-w-sm mx-auto px-5 space-y-5 pt-2">
 
         {/* Header */}
-        <div className="pt-2 flex items-center gap-3">
+        <div className="pt-1 flex items-center gap-3">
           <Link
             href="/student"
-            className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.06)' }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-opacity hover:opacity-70"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.07)' }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </Link>
           <div>
-            <p className="font-display font-bold text-[20px] text-white leading-tight">Mi Balance</p>
-            <p className="font-body text-[12px]" style={{ color: '#71717A' }}>Créditos y membresía</p>
+            <p
+              className="font-semibold text-[20px] text-white leading-tight tracking-tight"
+              style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+            >
+              Mi Balance
+            </p>
+            <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>Créditos y membresía</p>
           </div>
         </div>
 
         {/* Membership card */}
         {membership ? (
-          <div
-            className="rounded-2xl p-5"
-            style={{ background: '#18181B', border: '1px solid #27272A' }}
-          >
-            <p className="font-body font-bold text-[10px] uppercase tracking-wider mb-3" style={{ color: '#52525B' }}>
+          <div className="rounded-2xl p-5" style={glassCard}>
+            <p
+              className="text-[10px] font-semibold uppercase tracking-widest mb-3"
+              style={{ color: 'rgba(255,45,120,0.50)' }}
+            >
               Membresía activa
             </p>
-            <p className="font-display font-bold text-white text-xl mb-1">{membership.plan_name}</p>
-            <div className="flex items-center gap-4 mt-3">
+            <p
+              className="font-semibold text-white text-xl mb-3 tracking-tight"
+              style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+            >
+              {membership.plan_name}
+            </p>
+            <div className="flex items-center gap-4">
               <div className="text-center">
-                <p className="font-display font-bold text-2xl text-white">{classesPerMonth}</p>
-                <p className="text-white/40 text-xs mt-0.5">clases/mes</p>
+                <p
+                  className="font-semibold text-2xl text-white tracking-tight"
+                  style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+                >
+                  {classesPerMonth}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>clases/mes</p>
               </div>
-              <div className="w-px h-10" style={{ background: '#27272A' }} />
+              <div className="w-px h-10" style={{ background: 'rgba(255,255,255,0.07)' }} />
               <div className="text-center">
-                <p className="font-display font-bold text-2xl text-white">
+                <p
+                  className="font-semibold text-2xl text-white tracking-tight"
+                  style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+                >
                   ${Number(membership.monthly_fee).toLocaleString('es-AR')}
                 </p>
-                <p className="text-white/40 text-xs mt-0.5">cuota mensual</p>
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>cuota mensual</p>
               </div>
             </div>
           </div>
         ) : (
-          <div
-            className="rounded-2xl p-5 text-center"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-          >
-            <p className="text-white/40 text-sm">Sin membresía activa</p>
+          <div className="rounded-2xl p-5 text-center" style={glassCard}>
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.38)' }}>Sin membresía activa</p>
           </div>
         )}
 
         {/* Recovery balance card */}
         <div
           className="rounded-2xl p-5"
-          style={{ background: recoveryCredits > 0 ? '#A855F718' : '#18181B', border: recoveryCredits > 0 ? '1px solid #A855F733' : '1px solid #27272A' }}
+          style={
+            recoveryCredits > 0
+              ? { background: 'rgba(255,45,120,0.07)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,45,120,0.18)' }
+              : glassCard
+          }
         >
-          <p className="font-body font-bold text-[10px] uppercase tracking-wider mb-3" style={{ color: '#52525B' }}>
+          <p
+            className="text-[10px] font-semibold uppercase tracking-widest mb-3"
+            style={{ color: recoveryCredits > 0 ? 'rgba(255,45,120,0.50)' : 'rgba(255,255,255,0.25)' }}
+          >
             Créditos de recupero
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
-              style={{ background: recoveryCredits > 0 ? '#A855F7' : 'rgba(255,255,255,0.06)' }}
+              style={
+                recoveryCredits > 0
+                  ? { background: 'linear-gradient(135deg, #FF2D78, #C0155A)', boxShadow: '0 0 16px rgba(255,45,120,0.30)' }
+                  : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.07)' }
+              }
             >
-              <span className="font-display font-bold text-white text-2xl">{recoveryCredits}</span>
+              <span
+                className="font-bold text-white text-2xl"
+                style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+              >
+                {recoveryCredits}
+              </span>
             </div>
             <div>
-              <p className="font-display font-semibold text-white text-base">
+              <p className="font-medium text-white text-base leading-snug">
                 {recoveryCredits === 0 ? 'Sin créditos' : recoveryCredits === 1 ? '1 clase disponible' : `${recoveryCredits} clases disponibles`}
               </p>
-              <p className="text-white/40 text-xs mt-0.5 leading-snug">
+              <p className="text-xs mt-1 leading-snug" style={{ color: 'rgba(255,255,255,0.35)' }}>
                 {recoveryCredits > 0
                   ? 'Clases acreditadas por feriados o cancelaciones'
-                  : 'Los créditos se acreditan cuando se cancela una clase'}
+                  : 'Se acreditan cuando se cancela una clase'}
               </p>
             </div>
           </div>
