@@ -70,10 +70,10 @@ export async function getReportSummary(): Promise<ReportSummary> {
       .eq('center_id', centerId)
       .eq('role', 'student')
       .eq('is_active', false),
-    // Clases del mes actual
+    // Clases del mes actual — traemos IDs para filtrar attendance después
     admin
       .from('classes')
-      .select('id', { count: 'exact', head: true })
+      .select('id')
       .eq('center_id', centerId)
       .gte('scheduled_date', thisMonthStart.split('T')[0])
       .lte('scheduled_date', thisMonthEnd.split('T')[0])
@@ -83,11 +83,11 @@ export async function getReportSummary(): Promise<ReportSummary> {
       .from('class_enrollments')
       .select('class_id')
       .eq('center_id', centerId),
-    // Asistencias del mes
+    // Asistencias del mes — sin filtro center_id (columna no existe en schema base)
+    // filtramos via class_id join en el cálculo posterior
     admin
       .from('attendance')
-      .select('id')
-      .eq('center_id', centerId)
+      .select('id, class_id')
       .gte('checked_in_at', thisMonthStart)
       .lte('checked_in_at', thisMonthEnd),
     // Membresías bloqueadas
@@ -107,9 +107,10 @@ export async function getReportSummary(): Promise<ReportSummary> {
     0
   )
 
-  // Tasa de asistencia: asistencias del mes / inscripciones totales * 100
-  const totalEnrollments = enrollmentsThis.data?.length ?? 0
-  const totalAttendance = attendanceThis.data?.length ?? 0
+  // Tasa de asistencia: filtramos attendance por class_id del centro
+  const centerClassIds = new Set((classesThis.data ?? []).map((c: { id: string }) => c.id))
+  const totalEnrollments = (enrollmentsThis.data ?? []).filter((e) => centerClassIds.has(e.class_id)).length
+  const totalAttendance = (attendanceThis.data ?? []).filter((a) => centerClassIds.has(a.class_id)).length
   const avgAttendanceRate =
     totalEnrollments > 0
       ? Math.round((totalAttendance / totalEnrollments) * 100)
@@ -120,7 +121,7 @@ export async function getReportSummary(): Promise<ReportSummary> {
     revenueLastMonth: Math.round(revenueLastMonth * 100) / 100,
     activeStudents: studentsActive.count ?? 0,
     inactiveStudents: studentsInactive.count ?? 0,
-    classesThisMonth: classesThis.count ?? 0,
+    classesThisMonth: classesThis.data?.length ?? 0,
     avgAttendanceRate,
     blockedMemberships: blockedMem.count ?? 0,
   }

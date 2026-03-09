@@ -118,11 +118,10 @@ export async function validateAndCheckin(token: string): Promise<CheckinResult> 
     return { success: true, message: 'Ya registraste tu asistencia para esta clase', studentName: profile.full_name }
   }
 
-  // 7. Register attendance — usamos admin client para evitar issues de RLS/sesión
+  // 7. Register attendance — center_id no existe en producción (schema base no la tiene)
   const { error } = await admin.from('attendance').insert({
     class_id: activeClass.id,
     student_id: user.id,
-    center_id: qrToken.center_id,
   })
 
   if (error) {
