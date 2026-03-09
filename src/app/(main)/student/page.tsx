@@ -1,4 +1,4 @@
-import { getProfile } from '@/features/auth/services/auth.actions'
+import { getProfile, logout } from '@/features/auth/services/auth.actions'
 import { getNextClass, getAttendanceHistory } from '@/features/students/services/student-portal.actions'
 import Link from 'next/link'
 
@@ -65,7 +65,18 @@ const glassCard = {
 
 export default async function StudentPage() {
   const profile = await getProfile()
-  if (!profile) return null
+  if (!profile) return (
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#07050F' }}>
+      <div className="text-center space-y-4">
+        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>No se pudo cargar tu perfil</p>
+        <form action={logout}>
+          <button type="submit" className="text-sm font-semibold cursor-pointer" style={{ color: '#FF2D78' }}>
+            Volver a iniciar sesión
+          </button>
+        </form>
+      </div>
+    </div>
+  )
 
   const [nextClass, history] = await Promise.all([
     getNextClass(profile.id),

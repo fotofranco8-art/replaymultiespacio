@@ -12,10 +12,12 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
+      const { data: { user } } = await supabase.auth.getUser()
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .single()
+        .eq('id', user?.id ?? '')
+        .maybeSingle()
 
       const role = profile?.role ?? 'student'
       const redirectTo = ROLE_REDIRECTS[role as keyof typeof ROLE_REDIRECTS]

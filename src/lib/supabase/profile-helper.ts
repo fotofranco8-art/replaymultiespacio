@@ -26,15 +26,28 @@ export async function getMyProfile(): Promise<MyProfile | null> {
   const supabase = await createClient()
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser()
 
-  if (!user) return null
+  if (authError) {
+    console.error('[getMyProfile] Auth error:', authError.message)
+    return null
+  }
 
-  const { data } = await supabase
+  if (!user) {
+    console.error('[getMyProfile] No active session')
+    return null
+  }
+
+  const { data, error: profileError } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
+
+  if (profileError) {
+    console.error('[getMyProfile] Profile query error:', profileError.code, profileError.message, '| userId:', user.id)
+  }
 
   return data as MyProfile | null
 }

@@ -1,4 +1,4 @@
-import { getProfile } from '@/features/auth/services/auth.actions'
+import { getProfile, logout } from '@/features/auth/services/auth.actions'
 import { getMyBalance } from '@/features/students/services/student-portal.actions'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
@@ -23,7 +23,18 @@ const glassCard = {
 
 export default async function StudentBalancePage() {
   const profile = await getProfile()
-  if (!profile) return null
+  if (!profile) return (
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#07050F' }}>
+      <div className="text-center space-y-4">
+        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>No se pudo cargar tu perfil</p>
+        <form action={logout}>
+          <button type="submit" className="text-sm font-semibold cursor-pointer" style={{ color: '#FF2D78' }}>
+            Volver a iniciar sesión
+          </button>
+        </form>
+      </div>
+    </div>
+  )
 
   const [balance, membership] = await Promise.all([
     profile.center_id ? getMyBalance(profile.id, profile.center_id) : null,
