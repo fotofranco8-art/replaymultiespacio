@@ -183,12 +183,9 @@ export const agentTools = {
       full_name: z.string().describe('Nombre completo del alumno'),
       email: z.string().email().describe('Email del alumno'),
       phone: z.string().optional().describe('Teléfono opcional'),
-      plan_name: z.string().default('Plan Mensual').describe('Nombre del plan'),
-      monthly_fee: z.number().positive().default(50000).describe('Cuota mensual'),
-      classes_per_month: z.number().int().positive().default(8).describe('Clases por mes'),
     }),
-    execute: async ({ full_name, email, phone, plan_name, monthly_fee, classes_per_month }) => {
-      await inviteStudent({ full_name, email, phone, plan_name, monthly_fee, classes_per_month, discipline_id: '' })
+    execute: async ({ full_name, email, phone }) => {
+      await inviteStudent({ full_name, email, phone, discipline_ids: [] })
       return { success: true, message: `Invitación enviada a ${email}.` }
     },
   }),
@@ -237,7 +234,7 @@ export const agentTools = {
       color: z.string().describe('Color en formato hex (ej: #7C3AED)'),
     }),
     execute: async ({ name, color }) => {
-      await createDiscipline(name, color)
+      await createDiscipline({ name, color })
       return { success: true, message: `Disciplina "${name}" creada.` }
     },
   }),
