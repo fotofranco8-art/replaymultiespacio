@@ -80,9 +80,12 @@ export async function inviteStudent(input: NewStudentInput) {
   const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://replaymultiespacioartistico.vercel.app'
+
   const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
     input.email,
     {
+      redirectTo: `${siteUrl}/callback`,
       data: {
         full_name: input.full_name,
         role: 'student',
