@@ -126,7 +126,7 @@ export const agentTools = {
       notes: z.string().optional().describe('Notas opcionales'),
     }),
     execute: async ({ student_id, amount, method, notes }) => {
-      await registerPayment({ student_id, amount, method, notes })
+      await registerPayment({ payment_type: 'student', student_id, amount, method, notes })
       return { success: true, message: `Pago de $${amount} registrado correctamente.` }
     },
   }),
