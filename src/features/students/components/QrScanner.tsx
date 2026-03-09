@@ -18,30 +18,30 @@ export default function QrScanner({ onScan }: Props) {
 
     let stopped = false
 
-    import('html5-qrcode').then(({ Html5QrcodeScanner }) => {
+    import('html5-qrcode').then(({ Html5Qrcode }) => {
       if (stopped || !containerRef.current) return
 
-      const scanner = new Html5QrcodeScanner(
-        id,
-        { fps: 10, qrbox: { width: 240, height: 240 }, rememberLastUsedCamera: true },
-        false
-      )
+      const scanner = new Html5Qrcode(id)
       scannerRef.current = scanner
 
-      scanner.render(
-        (decodedText: string) => {
-          onScan(decodedText)
-        },
-        () => {
-          // scan error — ignore
-        }
-      )
+      const config = { fps: 10, qrbox: { width: 240, height: 240 } }
+      const onSuccess = (decodedText: string) => { onScan(decodedText) }
+      const onError = () => { /* ignorar errores de frames sin QR */ }
+
+      // Intentar cámara trasera primero, fallback a cualquier cámara
+      scanner
+        .start({ facingMode: 'environment' }, config, onSuccess, onError)
+        .catch(() => {
+          if (!stopped) {
+            scanner.start({ facingMode: 'user' }, config, onSuccess, onError).catch(() => null)
+          }
+        })
     })
 
     return () => {
       stopped = true
-      const s = scannerRef.current as { clear?: () => Promise<void> } | null
-      if (s?.clear) s.clear().catch(() => null)
+      const s = scannerRef.current as { stop?: () => Promise<void> } | null
+      if (s?.stop) s.stop().catch(() => null)
     }
   }, [onScan])
 
