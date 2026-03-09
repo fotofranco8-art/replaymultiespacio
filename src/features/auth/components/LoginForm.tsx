@@ -20,7 +20,7 @@ export function LoginForm() {
   return (
     <form action={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-white/60 mb-1">
+        <label htmlFor="email" className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>
           Email
         </label>
         <input
@@ -30,13 +30,12 @@ export function LoginForm() {
           required
           autoComplete="email"
           placeholder="tu@email.com"
-          className="w-full rounded-lg border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/30 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-          style={{ background: 'rgba(255,255,255,0.07)' }}
+          className="glass-input"
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-white/60 mb-1">
+        <label htmlFor="password" className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>
           Contraseña
         </label>
         <input
@@ -46,13 +45,15 @@ export function LoginForm() {
           required
           autoComplete="current-password"
           placeholder="••••••••"
-          className="w-full rounded-lg border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/30 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-          style={{ background: 'rgba(255,255,255,0.07)' }}
+          className="glass-input"
         />
       </div>
 
       {error && (
-        <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
+        <div
+          className="rounded-xl px-4 py-3 text-sm"
+          style={{ color: '#f87171', background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.18)' }}
+        >
           {error === 'Invalid login credentials'
             ? 'Email o contraseña incorrectos'
             : error}
@@ -62,8 +63,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-80"
-        style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
+        className="btn-primary w-full rounded-xl py-2.5 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? 'Ingresando...' : 'Ingresar'}
       </button>

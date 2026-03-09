@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Check } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import {
   createDiscipline,
   updateDiscipline,
@@ -68,17 +68,20 @@ function Toggle({
   onChange: (v: string) => void
 }) {
   return (
-    <div className="flex rounded-lg overflow-hidden border border-white/10" style={{ background: 'rgba(255,255,255,0.04)' }}>
+    <div
+      className="flex rounded-xl overflow-hidden"
+      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+    >
       {options.map((opt) => (
         <button
           key={opt.value}
           type="button"
           onClick={() => onChange(opt.value)}
-          className="flex-1 py-2 text-sm font-medium transition-all"
+          className="flex-1 py-2.5 text-sm font-medium transition-all"
           style={
             value === opt.value
-              ? { background: 'linear-gradient(135deg, #A855F7, #6366F1)', color: '#fff' }
-              : { color: 'rgba(255,255,255,0.4)' }
+              ? { background: 'linear-gradient(135deg, #A855F7, #7C3AED)', color: '#fff', boxShadow: '0 0 16px rgba(168,85,247,0.25)' }
+              : { color: 'rgba(255,255,255,0.40)' }
           }
         >
           {opt.label}
@@ -107,32 +110,47 @@ function DisciplineModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm p-4"
+      className="fixed inset-0 flex items-center justify-center z-50 p-4"
+      style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div
-        className="rounded-2xl w-full max-w-md border border-white/10 overflow-y-auto max-h-[90vh]"
-        style={{ background: '#1A0A30' }}
-      >
-        <div className="p-6 space-y-5">
-          <h2 className="text-lg font-bold text-white">{title}</h2>
+      <div className="glass-modal rounded-2xl w-full max-w-md overflow-y-auto max-h-[90vh]">
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-6 pt-6 pb-4"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <h2
+            className="text-lg font-semibold text-white tracking-tight"
+            style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+          >
+            {title}
+          </h2>
+          <button
+            onClick={onClose}
+            className="transition-colors p-1 rounded-lg hover:bg-white/[0.06]"
+            style={{ color: 'rgba(255,255,255,0.35)' }}
+          >
+            <X size={16} />
+          </button>
+        </div>
 
+        <div className="p-6 space-y-5">
           {/* Nombre */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5">Nombre</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Nombre</label>
             <input
               value={form.name}
               onChange={(e) => set('name', e.target.value)}
               required
               placeholder="Ej. Danza Jazz"
-              className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              style={{ background: 'rgba(255,255,255,0.07)' }}
+              className="glass-input"
             />
           </div>
 
           {/* Tipo */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5">Tipo</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Tipo</label>
             <Toggle
               options={[{ value: 'grupal', label: 'Grupal' }, { value: 'individual', label: 'Individual' }]}
               value={form.type}
@@ -142,42 +160,41 @@ function DisciplineModal({
 
           {/* Color */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5">Color identificativo</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Color identificativo</label>
             <ColorPicker value={form.color} onChange={(c) => set('color', c)} />
           </div>
 
           {/* Precio + Capacidad */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-white/60 mb-1.5">Precio Mensual</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Precio Mensual</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/40">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>$</span>
                 <input
                   type="number"
                   min="0"
                   value={form.monthly_price}
                   onChange={(e) => set('monthly_price', e.target.value)}
-                  className="w-full border border-white/10 rounded-lg pl-7 pr-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  style={{ background: 'rgba(255,255,255,0.07)' }}
+                  className="glass-input"
+                  style={{ paddingLeft: '1.75rem' }}
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-white/60 mb-1.5">Capacidad Máx.</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Capacidad Máx.</label>
               <input
                 type="number"
                 min="1"
                 value={form.max_capacity}
                 onChange={(e) => set('max_capacity', e.target.value)}
-                className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                style={{ background: 'rgba(255,255,255,0.07)' }}
+                className="glass-input"
               />
             </div>
           </div>
 
           {/* Modalidad */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5">Modalidad</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Modalidad</label>
             <Toggle
               options={[{ value: 'anual', label: '🔄 Anual' }, { value: 'seminario', label: '🎯 Seminario' }]}
               value={form.modality}
@@ -186,26 +203,35 @@ function DisciplineModal({
           </div>
 
           {/* Activa */}
-          <label className="flex items-center gap-3 cursor-pointer select-none rounded-lg border border-white/10 px-4 py-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
+          <label
+            className="flex items-center gap-3 cursor-pointer select-none rounded-xl px-4 py-3 transition-all"
+            style={{
+              background: form.is_active ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${form.is_active ? 'rgba(34,197,94,0.18)' : 'rgba(255,255,255,0.07)'}`,
+            }}
+          >
             <input
               type="checkbox"
               checked={form.is_active}
               onChange={(e) => set('is_active', e.target.checked)}
-              className="w-4 h-4 rounded accent-purple-500"
+              className="w-4 h-4 rounded"
+              style={{ accentColor: '#22C55E' }}
             />
-            <span className="text-sm text-white/70">Activa</span>
+            <div>
+              <p className="text-sm text-white font-medium">Activa</p>
+              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>Visible en el calendario y alumnos</p>
+            </div>
           </label>
 
           {/* Descripción */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5">Descripción</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Descripción</label>
             <textarea
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
               rows={3}
               placeholder="Breve descripción de la disciplina..."
-              className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-              style={{ background: 'rgba(255,255,255,0.07)' }}
+              className="glass-input resize-none"
             />
           </div>
 
@@ -214,7 +240,7 @@ function DisciplineModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-white/10 text-white/60 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-white/5 transition-colors"
+              className="btn-secondary flex-1 rounded-xl py-2.5 text-sm"
             >
               Cancelar
             </button>
@@ -222,8 +248,7 @@ function DisciplineModal({
               type="button"
               disabled={pending || !form.name.trim()}
               onClick={() => onSave(form)}
-              className="flex-1 text-white px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 transition-opacity hover:opacity-80"
-              style={{ background: 'linear-gradient(135deg, #A855F7, #6366F1)' }}
+              className="btn-primary flex-1 rounded-xl py-2.5 text-sm font-medium"
             >
               {pending ? 'Guardando...' : title.includes('Nueva') ? 'Crear Disciplina' : 'Guardar cambios'}
             </button>
@@ -275,48 +300,61 @@ export function DisciplinesPageClient({ disciplines, templateCounts }: Props) {
     })
   }
 
+  const glassCard = {
+    background: 'rgba(255,255,255,0.04)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255,255,255,0.07)',
+  }
+
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Disciplinas</h1>
-          <p className="text-sm text-white/50 mt-0.5">{disciplines.length} configuradas en el centro</p>
+          <h1
+            className="text-3xl font-semibold text-white tracking-tight"
+            style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+          >
+            Disciplinas
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.40)' }}>{disciplines.length} configuradas en el centro</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-80"
-          style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
+          className="btn-primary px-4 py-2 rounded-xl text-sm"
         >
           + Nueva disciplina
         </button>
       </div>
 
       {disciplines.length === 0 ? (
-        <div className="rounded-xl border border-white/10 p-12 text-center" style={{ background: 'rgba(255,255,255,0.04)' }}>
-          <p className="text-white/40 text-sm">Sin disciplinas configuradas.</p>
+        <div className="rounded-2xl p-12 text-center" style={glassCard}>
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>Sin disciplinas configuradas.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {disciplines.map((d) => (
             <div
               key={d.id}
-              className="rounded-xl border border-white/10 overflow-hidden flex flex-col"
-              style={{ background: 'rgba(255,255,255,0.04)' }}
+              className="rounded-2xl overflow-hidden flex flex-col"
+              style={glassCard}
             >
               {/* Color strip */}
-              <div className="h-2 w-full" style={{ backgroundColor: d.color }} />
+              <div className="h-1.5 w-full" style={{ backgroundColor: d.color }} />
 
-              <div className="p-4 flex flex-col gap-3 flex-1">
+              <div className="p-5 flex flex-col gap-3 flex-1">
                 {/* Name + status */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                    <p className="font-semibold text-white text-sm leading-tight">{d.name}</p>
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                    <p className="font-medium text-white text-sm leading-tight">{d.name}</p>
                   </div>
                   <span
-                    className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
-                      d.is_active ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white/40'
-                    }`}
+                    className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
+                    style={{
+                      background: d.is_active ? 'rgba(34,197,94,0.13)' : 'rgba(255,255,255,0.07)',
+                      color: d.is_active ? '#4ade80' : 'rgba(255,255,255,0.35)',
+                    }}
                   >
                     {d.is_active ? 'Activa' : 'Inactiva'}
                   </span>
@@ -324,43 +362,58 @@ export function DisciplinesPageClient({ disciplines, templateCounts }: Props) {
 
                 {/* Badges */}
                 <div className="flex flex-wrap gap-1.5">
-                  <span className="text-xs px-2 py-0.5 rounded-full border border-white/10 text-white/50">
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  >
                     {d.type === 'grupal' ? 'Grupal' : 'Individual'}
                   </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full border border-white/10 text-white/50">
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  >
                     {d.modality === 'anual' ? '🔄 Anual' : '🎯 Seminario'}
                   </span>
                 </div>
 
                 {/* Price + capacity */}
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-white font-semibold">
+                  <span className="font-semibold text-white">
                     ${Number(d.monthly_price).toLocaleString('es-AR')}
-                    <span className="text-white/40 font-normal text-xs">/mes</span>
+                    <span className="text-xs font-normal" style={{ color: 'rgba(255,255,255,0.38)' }}>/mes</span>
                   </span>
-                  <span className="text-white/40 text-xs">Cap. {d.max_capacity}</span>
+                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>Cap. {d.max_capacity}</span>
                 </div>
 
                 {/* Template count */}
-                <p className="text-xs text-white/30">
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.28)' }}>
                   {templateCounts[d.id]
                     ? `${templateCounts[d.id]} plantilla${templateCounts[d.id] === 1 ? '' : 's'} activa${templateCounts[d.id] === 1 ? '' : 's'}`
                     : 'Sin plantillas'}
                 </p>
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-1 border-t border-white/5">
+                <div
+                  className="flex gap-2 pt-2 mt-auto"
+                  style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+                >
                   <button
                     onClick={() => setEditingDiscipline(d)}
-                    className="flex-1 text-xs text-white/50 hover:text-white/80 transition-colors py-1"
+                    className="flex-1 text-xs py-1 transition-colors"
+                    style={{ color: 'rgba(255,255,255,0.35)' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.70)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
                   >
                     Editar
                   </button>
-                  <div className="w-px bg-white/10" />
+                  <div className="w-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
                   <button
                     onClick={() => startTransition(() => toggleDiscipline(d.id, !d.is_active))}
                     disabled={pending}
-                    className="flex-1 text-xs text-white/50 hover:text-white/80 disabled:opacity-50 transition-colors py-1"
+                    className="flex-1 text-xs py-1 transition-colors disabled:opacity-40"
+                    style={{ color: 'rgba(255,255,255,0.35)' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.70)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
                   >
                     {d.is_active ? 'Desactivar' : 'Activar'}
                   </button>

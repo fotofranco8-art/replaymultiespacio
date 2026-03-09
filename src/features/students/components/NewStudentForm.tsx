@@ -61,58 +61,68 @@ export function NewStudentForm({ disciplines, onClose }: Props) {
 
   return (
     <motion.div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 flex items-center justify-center z-50 p-4"
+      style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className="rounded-2xl w-full max-w-md border border-white/10 overflow-y-auto max-h-[90vh]"
-        style={{ background: '#1A0A30' }}
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        className="glass-modal rounded-2xl w-full max-w-md overflow-y-auto max-h-[90vh]"
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        exit={{ opacity: 0, scale: 0.96, y: 12 }}
         transition={{ duration: 0.15 }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/10">
-          <h2 className="text-lg font-bold text-white">Nuevo Estudiante</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white/70 transition-colors">
-            <X size={18} />
+        <div
+          className="flex items-center justify-between px-6 pt-6 pb-4"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <h2
+            className="text-lg font-semibold text-white tracking-tight"
+            style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+          >
+            Nuevo Estudiante
+          </h2>
+          <button
+            onClick={onClose}
+            className="transition-colors p-1 rounded-lg hover:bg-white/[0.06]"
+            style={{ color: 'rgba(255,255,255,0.35)' }}
+          >
+            <X size={16} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Nombre */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5">Nombre Completo</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Nombre Completo</label>
             <input
               name="full_name"
               required
               placeholder="Ej. Juan Pérez"
-              className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              style={{ background: 'rgba(255,255,255,0.07)' }}
+              className="glass-input"
             />
           </div>
 
           {/* Legajo */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5">
-              Legajo <span className="text-white/30 font-normal">(Opcional)</span>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>
+              Legajo <span className="font-normal" style={{ color: 'rgba(255,255,255,0.25)' }}>(Opcional)</span>
             </label>
             <input
               name="legajo"
               placeholder="1234"
-              className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              style={{ background: 'rgba(255,255,255,0.07)' }}
+              className="glass-input"
             />
           </div>
 
           {/* Disciplinas */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5">Disciplinas</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Disciplinas</label>
             {disciplines.filter((d) => d.is_active).length === 0 ? (
-              <p className="text-xs text-white/30 py-2">No hay disciplinas activas configuradas.</p>
+              <p className="text-xs py-2" style={{ color: 'rgba(255,255,255,0.28)' }}>No hay disciplinas activas configuradas.</p>
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 {disciplines
@@ -122,10 +132,10 @@ export function NewStudentForm({ disciplines, onClose }: Props) {
                     return (
                       <label
                         key={d.id}
-                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border cursor-pointer transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border cursor-pointer transition-all"
                         style={{
-                          borderColor: checked ? d.color : 'rgba(255,255,255,0.1)',
-                          background: checked ? `${d.color}18` : 'rgba(255,255,255,0.04)',
+                          borderColor: checked ? d.color : 'rgba(255,255,255,0.08)',
+                          background: checked ? `${d.color}15` : 'rgba(255,255,255,0.04)',
                         }}
                       >
                         <input
@@ -135,7 +145,7 @@ export function NewStudentForm({ disciplines, onClose }: Props) {
                           className="w-3.5 h-3.5 rounded"
                           style={{ accentColor: d.color }}
                         />
-                        <span className="text-sm font-medium truncate" style={{ color: checked ? d.color : 'rgba(255,255,255,0.6)' }}>
+                        <span className="text-sm font-medium truncate" style={{ color: checked ? d.color : 'rgba(255,255,255,0.55)' }}>
                           {d.name}
                         </span>
                       </label>
@@ -148,47 +158,44 @@ export function NewStudentForm({ disciplines, onClose }: Props) {
           {/* Email + Teléfono */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-white/60 mb-1.5">
-                Email <span className="text-white/30 text-xs">(login)</span>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>
+                Email <span className="font-normal" style={{ color: 'rgba(255,255,255,0.25)' }}>(login)</span>
               </label>
               <input
                 name="email"
                 type="email"
                 required
                 placeholder="alumno@ejemplo.com"
-                className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                style={{ background: 'rgba(255,255,255,0.07)' }}
+                className="glass-input"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white/60 mb-1.5">Teléfono</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Teléfono</label>
               <input
                 name="phone"
                 type="tel"
                 placeholder="+54 9 11..."
-                className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                style={{ background: 'rgba(255,255,255,0.07)' }}
+                className="glass-input"
               />
             </div>
           </div>
 
           {error && (
-            <p className="text-sm text-red-400 bg-red-500/10 rounded-lg px-3 py-2">{error}</p>
+            <p className="text-sm text-red-400 rounded-xl px-3 py-2" style={{ background: 'rgba(239,68,68,0.10)' }}>{error}</p>
           )}
 
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-white/10 rounded-xl py-2.5 text-sm text-white/60 hover:bg-white/5 transition-colors font-medium"
+              className="btn-secondary flex-1 rounded-xl py-2.5 text-sm"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #A855F7, #6366F1)' }}
+              className="btn-primary flex-1 rounded-xl py-2.5 text-sm font-medium"
             >
               {loading ? 'Enviando...' : 'Crear Alumno'}
             </button>

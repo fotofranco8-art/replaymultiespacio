@@ -16,3 +16,94 @@
 .font-mono-custom {
   font-family: var(--font-space-mono), monospace;
 }
+
+/* ─── Design system: Glass & tokens ─────────────────────────────────── */
+
+/* Glass card — reemplaza rgba(255,255,255,0.04) flat */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 0.75rem; /* rounded-xl */
+}
+
+/* Glass modal — reemplaza background: '#1A0A30' */
+.glass-modal {
+  background: rgba(7, 5, 15, 0.93);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+/* Glass input — reemplaza rgba(255,255,255,0.07) flat */
+.glass-input {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-radius: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+.glass-input:focus {
+  border-color: rgba(168, 85, 247, 0.50);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.12);
+}
+
+/* Primary button with glow */
+.btn-primary {
+  background: linear-gradient(135deg, #A855F7, #7C3AED);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
+  color: #fff;
+  font-weight: 500;
+  border-radius: 0.625rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  transition: opacity 0.15s, box-shadow 0.15s;
+  border: none;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  opacity: 0.92;
+  box-shadow: 0 0 28px rgba(168, 85, 247, 0.40);
+}
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Secondary button */
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 500;
+  border-radius: 0.625rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  transition: background 0.15s, color 0.15s;
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Purple glow ambient — para fondos de página */
+.purple-ambient {
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -10%,
+    rgba(168, 85, 247, 0.12) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}

@@ -68,13 +68,22 @@ function NavContent({
     <>
       {/* Logo */}
       <div className="px-3 py-5 flex items-center gap-2.5 shrink-0">
-        <div
-          className="w-7 h-7 rounded-lg shrink-0"
-          style={{ background: 'linear-gradient(135deg, #A855F7, #06B6D4)' }}
-        />
+        <div className="relative shrink-0">
+          {/* Glow detrás del logo */}
+          <div
+            className="absolute inset-0 rounded-lg blur-md"
+            style={{ background: 'rgba(168,85,247,0.40)', transform: 'scale(1.4)' }}
+          />
+          <div
+            className="relative w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: 'linear-gradient(135deg, #A855F7, #06B6D4)' }}
+          >
+            <span className="text-white font-bold text-xs">R</span>
+          </div>
+        </div>
         {showLabels && (
           <span
-            className="font-bold text-white text-sm whitespace-nowrap flex-1"
+            className="font-semibold text-white text-sm whitespace-nowrap flex-1 tracking-tight"
             style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
           >
             Replay OS
@@ -83,21 +92,21 @@ function NavContent({
         {isMobile && onClose && (
           <button
             onClick={onClose}
-            className="text-white/40 hover:text-white/70 transition-colors p-1"
+            className="text-white/30 hover:text-white/60 transition-colors p-1"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         )}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-2 pb-4 space-y-5 overflow-y-auto overflow-x-hidden">
+      <nav className="flex-1 px-2 pb-4 space-y-4 overflow-y-auto overflow-x-hidden">
         {NAV_SECTIONS.map((section) => (
           <div key={section.label}>
             {showLabels && (
               <p
-                className="px-3 mb-1 uppercase whitespace-nowrap"
-                style={{ color: '#8B7FAE', fontSize: '9px', fontWeight: 700, letterSpacing: '2px' }}
+                className="px-3 mb-1.5 uppercase whitespace-nowrap"
+                style={{ color: 'rgba(168,85,247,0.45)', fontSize: '9px', fontWeight: 700, letterSpacing: '2px' }}
               >
                 {section.label}
               </p>
@@ -112,25 +121,35 @@ function NavContent({
                     key={item.href}
                     href={item.href}
                     title={!showLabels ? item.label : undefined}
-                    className="flex items-center gap-2 rounded-xl transition-all"
+                    className="flex items-center gap-2.5 rounded-xl transition-all"
                     style={{
-                      height: '40px',
-                      padding: '0 12px',
+                      height: '38px',
+                      padding: '0 10px',
                       justifyContent: showLabels ? 'flex-start' : 'center',
                       background: active
-                        ? 'linear-gradient(135deg, rgba(168,85,247,0.19), rgba(124,58,237,0.13))'
+                        ? 'rgba(168,85,247,0.12)'
                         : 'transparent',
-                      border: active ? '1px solid rgba(168,85,247,0.25)' : '1px solid transparent',
+                      border: active
+                        ? '1px solid rgba(168,85,247,0.22)'
+                        : '1px solid transparent',
+                      boxShadow: active ? '0 0 12px rgba(168,85,247,0.08)' : 'none',
                     }}
                   >
                     <Icon
-                      size={16}
-                      style={{ color: active ? '#A855F7' : '#4B3D6E', flexShrink: 0 }}
+                      size={15}
+                      style={{
+                        color: active ? '#C084FC' : 'rgba(255,255,255,0.32)',
+                        flexShrink: 0,
+                      }}
                     />
                     {showLabels && (
                       <span
                         className="text-sm whitespace-nowrap"
-                        style={{ color: active ? '#A855F7' : '#C4B5D4', fontWeight: active ? 500 : 400 }}
+                        style={{
+                          color: active ? '#D8B4FE' : 'rgba(255,255,255,0.50)',
+                          fontWeight: active ? 500 : 400,
+                          fontFamily: 'var(--font-manrope, sans-serif)',
+                        }}
                       >
                         {item.label}
                       </span>
@@ -144,21 +163,27 @@ function NavContent({
       </nav>
 
       {/* Bottom: logout + collapse toggle */}
-      <div className="p-2 border-t space-y-1" style={{ borderColor: '#FFFFFF18' }}>
+      <div
+        className="p-2 space-y-0.5"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+      >
         <form action={logout}>
           <button
             type="submit"
             title={!showLabels ? 'Cerrar sesión' : undefined}
-            className="w-full flex items-center gap-2 rounded-xl transition-all hover:bg-white/5"
+            className="w-full flex items-center gap-2.5 rounded-xl transition-all hover:bg-white/[0.05]"
             style={{
-              height: '40px',
-              padding: '0 12px',
+              height: '38px',
+              padding: '0 10px',
               justifyContent: showLabels ? 'flex-start' : 'center',
             }}
           >
-            <LogOut size={14} style={{ color: '#8B7FAE', flexShrink: 0 }} />
+            <LogOut size={14} style={{ color: 'rgba(255,255,255,0.28)', flexShrink: 0 }} />
             {showLabels && (
-              <span className="text-sm whitespace-nowrap" style={{ color: '#8B7FAE' }}>
+              <span
+                className="text-sm whitespace-nowrap"
+                style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font-manrope, sans-serif)' }}
+              >
                 Cerrar sesión
               </span>
             )}
@@ -169,16 +194,16 @@ function NavContent({
           <button
             onClick={onToggleCollapse}
             title={collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
-            className="w-full flex items-center gap-2 rounded-xl transition-all hover:bg-white/5"
+            className="w-full flex items-center gap-2 rounded-xl transition-all hover:bg-white/[0.05]"
             style={{
-              height: '36px',
-              padding: '0 12px',
+              height: '32px',
+              padding: '0 10px',
               justifyContent: collapsed ? 'center' : 'flex-end',
             }}
           >
             {collapsed
-              ? <ChevronRight size={14} style={{ color: '#4B3D6E' }} />
-              : <ChevronLeft size={14} style={{ color: '#4B3D6E' }} />
+              ? <ChevronRight size={13} style={{ color: 'rgba(255,255,255,0.20)' }} />
+              : <ChevronLeft size={13} style={{ color: 'rgba(255,255,255,0.20)' }} />
             }
           </button>
         )}
@@ -215,16 +240,28 @@ export function AdminNav() {
     return pathname === href || pathname.startsWith(href + '/')
   }
 
+  const sidebarStyle = {
+    background: 'rgba(255,255,255,0.025)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    borderColor: 'rgba(255,255,255,0.06)',
+  }
+
   return (
     <>
-      {/* Mobile: hamburger button (fixed top-left, only visible on mobile) */}
+      {/* Mobile: hamburger button */}
       <button
-        className="md:hidden fixed top-3 left-3 z-50 w-9 h-9 flex items-center justify-center rounded-lg border border-white/10 text-white/70 hover:bg-white/10 transition-colors"
-        style={{ background: 'rgba(13,10,30,0.95)' }}
+        className="md:hidden fixed top-3 left-3 z-50 w-9 h-9 flex items-center justify-center rounded-xl text-white/60 hover:text-white/90 transition-colors"
+        style={{
+          background: 'rgba(255,255,255,0.07)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+        }}
         onClick={() => setMobileOpen(true)}
         aria-label="Abrir menú"
       >
-        <Menu size={18} />
+        <Menu size={17} />
       </button>
 
       {/* Mobile drawer */}
@@ -232,7 +269,8 @@ export function AdminNav() {
         {mobileOpen && (
           <>
             <motion.div
-              className="md:hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
+              className="md:hidden fixed inset-0 z-40"
+              style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -240,10 +278,7 @@ export function AdminNav() {
             />
             <motion.div
               className="md:hidden fixed top-0 left-0 bottom-0 z-50 w-64 flex flex-col border-r overflow-hidden"
-              style={{
-                background: 'linear-gradient(180deg, #0D0A1E 0%, #1A0A30 100%)',
-                borderColor: '#FFFFFF18',
-              }}
+              style={sidebarStyle}
               initial={{ x: -260 }}
               animate={{ x: 0 }}
               exit={{ x: -260 }}
@@ -263,10 +298,7 @@ export function AdminNav() {
       {/* Desktop sidebar */}
       <motion.aside
         className="hidden md:flex min-h-screen flex-col shrink-0 border-r overflow-hidden"
-        style={{
-          background: 'linear-gradient(180deg, #0D0A1E 0%, #1A0A30 100%)',
-          borderColor: '#FFFFFF18',
-        }}
+        style={sidebarStyle}
         animate={{ width: collapsed ? 56 : 240 }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
       >

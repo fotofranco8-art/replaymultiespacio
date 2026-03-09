@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${spaceGrotesk.variable} ${manrope.variable} ${spaceMono.variable}`}>
+      <body className={`${spaceGrotesk.variable} ${manrope.variable} ${spaceMono.variable} font-body`} style={{ background: '#07050F', color: '#fff', minHeight: '100vh' }}>
         {children}
         <Toaster position="bottom-right" theme="dark" richColors />
       </body>

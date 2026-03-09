@@ -47,25 +47,29 @@ export function ClassTemplatesPageClient({ disciplines, templates, teachers, roo
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-7xl mx-auto p-4 md:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Plantillas de Clases</h1>
-          <p className="text-sm text-white/50 mt-0.5">Plantilla semanal recurrente</p>
+          <h1
+            className="text-3xl font-semibold text-white tracking-tight"
+            style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+          >
+            Plantillas de Clases
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.40)' }}>Plantilla semanal recurrente</p>
         </div>
         <div className="flex gap-3">
           <button
             onClick={() => setShowTemplateForm(true)}
             disabled={disciplines.length === 0 || teachers.length === 0}
-            className="text-sm text-white/60 hover:text-white border border-white/10 rounded-lg px-3 py-1.5 disabled:opacity-40 hover:bg-white/5 transition-colors"
+            className="btn-secondary px-4 py-2 rounded-xl text-sm disabled:opacity-40"
           >
             + Nueva clase
           </button>
           <button
             onClick={handleProjectMonth}
             disabled={projecting || templates.length === 0}
-            className="px-4 py-1.5 text-sm font-medium text-white rounded-lg disabled:opacity-50 transition-opacity hover:opacity-80"
-            style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
+            className="btn-primary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-50"
           >
             {projecting ? 'Proyectando...' : 'Proyectar mes'}
           </button>
@@ -73,14 +77,20 @@ export function ClassTemplatesPageClient({ disciplines, templates, teachers, roo
       </div>
 
       {projResult && (
-        <div className="mb-4 px-4 py-2 bg-green-500/10 text-green-400 text-sm rounded-lg border border-green-500/20">
+        <div
+          className="mb-4 px-4 py-2 text-sm rounded-xl"
+          style={{ color: '#4ade80', background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.20)' }}
+        >
           {projResult}
         </div>
       )}
 
       {(disciplines.length === 0 || teachers.length === 0) && (
-        <div className="mb-4 px-4 py-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
-          <p className="text-sm text-amber-400">
+        <div
+          className="mb-4 px-4 py-3 rounded-xl"
+          style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.18)' }}
+        >
+          <p className="text-sm" style={{ color: 'rgba(251,191,36,0.85)' }}>
             {disciplines.length === 0
               ? 'Crea disciplinas e instructores antes de configurar plantillas.'
               : 'No hay instructores registrados en el sistema.'}
@@ -88,7 +98,15 @@ export function ClassTemplatesPageClient({ disciplines, templates, teachers, roo
         </div>
       )}
 
-      <div className="rounded-xl border border-white/10 p-6" style={{ background: 'rgba(255,255,255,0.04)' }}>
+      <div
+        className="rounded-2xl p-6"
+        style={{
+          background: 'rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255,255,255,0.07)',
+        }}
+      >
         <WeeklyTemplateGrid templates={templates} />
       </div>
 

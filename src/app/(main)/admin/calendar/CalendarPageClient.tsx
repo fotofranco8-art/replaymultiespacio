@@ -83,20 +83,39 @@ export function CalendarPageClient({
   const disciplineName = selected?.disciplines?.name ?? null
   const teacherName = selected?.profiles?.full_name ?? null
 
+  const navBtnStyle = {
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    color: 'rgba(255,255,255,0.55)',
+    borderRadius: '0.625rem',
+    padding: '0.375rem 0.75rem',
+    fontSize: '0.875rem',
+    transition: 'all 0.15s',
+    cursor: 'pointer',
+  }
+
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Agenda</h1>
-          <p className="text-sm text-white/50 mt-0.5 capitalize">
+          <h1
+            className="text-3xl font-semibold text-white tracking-tight"
+            style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+          >
+            Agenda
+          </h1>
+          <p className="text-sm mt-1 capitalize" style={{ color: 'rgba(255,255,255,0.40)' }}>
             {view === 'monthly' ? `${MONTH_NAMES[month - 1]} ${year}` : dateLabel}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* View toggle */}
-          <div className="flex rounded-lg overflow-hidden border border-white/10" style={{ background: 'rgba(255,255,255,0.04)' }}>
+          <div
+            className="flex rounded-xl overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
             {(['monthly', 'daily'] as const).map((v) => (
               <button
                 key={v}
@@ -104,8 +123,8 @@ export function CalendarPageClient({
                 className="px-3 py-1.5 text-xs font-medium transition-all"
                 style={
                   view === v
-                    ? { background: 'linear-gradient(135deg, #A855F7, #7C3AED)', color: '#fff' }
-                    : { color: 'rgba(255,255,255,0.4)' }
+                    ? { background: 'linear-gradient(135deg, #A855F7, #7C3AED)', color: '#fff', boxShadow: '0 0 12px rgba(168,85,247,0.25)' }
+                    : { color: 'rgba(255,255,255,0.40)' }
                 }
               >
                 {v === 'monthly' ? 'Mensual' : 'Diaria'}
@@ -116,46 +135,26 @@ export function CalendarPageClient({
           {/* Navigation */}
           {view === 'monthly' ? (
             <>
-              <button
-                onClick={() => navigateMonth(-1)}
-                className="px-3 py-1.5 text-sm border border-white/10 text-white/60 rounded-lg hover:bg-white/5 transition-colors"
-              >
-                ←
-              </button>
-              <button
-                onClick={() => navigateMonth(1)}
-                className="px-3 py-1.5 text-sm border border-white/10 text-white/60 rounded-lg hover:bg-white/5 transition-colors"
-              >
-                →
-              </button>
+              <button onClick={() => navigateMonth(-1)} style={navBtnStyle}>←</button>
+              <button onClick={() => navigateMonth(1)} style={navBtnStyle}>→</button>
               <button
                 onClick={() => router.push('/admin/class-templates')}
-                className="px-4 py-1.5 text-sm font-medium text-white rounded-lg transition-opacity hover:opacity-80"
-                style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
+                className="btn-primary px-4 py-1.5 rounded-xl text-sm font-medium"
               >
                 Proyectar mes
               </button>
             </>
           ) : (
             <>
-              <button
-                onClick={() => navigateDay(-1)}
-                className="px-3 py-1.5 text-sm border border-white/10 text-white/60 rounded-lg hover:bg-white/5 transition-colors"
-              >
-                ←
-              </button>
+              <button onClick={() => navigateDay(-1)} style={navBtnStyle}>←</button>
               <button
                 onClick={goToday}
-                className="px-3 py-1.5 text-xs border border-white/10 text-white/60 rounded-lg hover:bg-white/5 transition-colors"
+                style={navBtnStyle}
+                className="text-xs"
               >
                 Hoy
               </button>
-              <button
-                onClick={() => navigateDay(1)}
-                className="px-3 py-1.5 text-sm border border-white/10 text-white/60 rounded-lg hover:bg-white/5 transition-colors"
-              >
-                →
-              </button>
+              <button onClick={() => navigateDay(1)} style={navBtnStyle}>→</button>
             </>
           )}
         </div>
@@ -164,9 +163,12 @@ export function CalendarPageClient({
       {/* Content */}
       {view === 'monthly' ? (
         classes.length === 0 ? (
-          <div className="rounded-xl border border-white/10 p-12 text-center" style={{ background: 'rgba(255,255,255,0.04)' }}>
-            <p className="text-white/50 text-sm">Sin clases proyectadas para este mes.</p>
-            <p className="text-white/30 text-xs mt-1">
+          <div
+            className="rounded-2xl p-12 text-center"
+            style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.07)' }}
+          >
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>Sin clases proyectadas para este mes.</p>
+            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
               Ve a Plantillas y usa &quot;Proyectar mes&quot; para generar las clases.
             </p>
           </div>
@@ -190,12 +192,21 @@ export function CalendarPageClient({
 
       {/* Monthly detail modal */}
       {selected && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="rounded-2xl p-6 max-w-sm w-full border border-white/10" style={{ background: '#1A0A30' }}>
-            <h3 className="font-bold text-white text-lg mb-4">{disciplineName}</h3>
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setSelected(null) }}
+        >
+          <div className="glass-modal rounded-2xl p-6 max-w-sm w-full">
+            <h3
+              className="font-semibold text-white text-lg mb-4 tracking-tight"
+              style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+            >
+              {disciplineName}
+            </h3>
             <div className="space-y-2.5 text-sm mb-6">
               <div className="flex justify-between">
-                <span className="text-white/50">Fecha</span>
+                <span style={{ color: 'rgba(255,255,255,0.45)' }}>Fecha</span>
                 <span className="font-medium text-white">
                   {new Date(selected.scheduled_date + 'T00:00:00').toLocaleDateString('es-AR', {
                     weekday: 'short', day: 'numeric', month: 'long',
@@ -203,39 +214,46 @@ export function CalendarPageClient({
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/50">Horario</span>
+                <span style={{ color: 'rgba(255,255,255,0.45)' }}>Horario</span>
                 <span className="font-medium text-white">
                   {selected.start_time.slice(0, 5)}–{selected.end_time.slice(0, 5)}
                 </span>
               </div>
               {selected.room && (
                 <div className="flex justify-between">
-                  <span className="text-white/50">Aula</span>
+                  <span style={{ color: 'rgba(255,255,255,0.45)' }}>Aula</span>
                   <span className="font-medium text-white">{selected.room}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-white/50">Instructor</span>
+                <span style={{ color: 'rgba(255,255,255,0.45)' }}>Instructor</span>
                 <span className="font-medium text-white">{teacherName ?? '—'}</span>
               </div>
             </div>
 
             {selected.is_cancelled ? (
-              <div className="text-center py-2 text-sm text-red-400 font-medium bg-red-500/10 rounded-lg mb-3 border border-red-500/20">
+              <div
+                className="text-center py-2 text-sm font-medium rounded-xl mb-3"
+                style={{ color: '#f87171', background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.20)' }}
+              >
                 Clase cancelada
               </div>
             ) : (
               <button
                 onClick={() => handleCancel(selected.id)}
                 disabled={cancelling}
-                className="w-full bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg px-4 py-2 text-sm font-medium hover:bg-red-500/30 disabled:opacity-50 mb-2 transition-colors"
+                className="w-full rounded-xl px-4 py-2.5 text-sm font-medium mb-2 transition-colors disabled:opacity-50"
+                style={{ color: '#f87171', background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.20)' }}
               >
                 {cancelling ? 'Cancelando...' : 'Cancelar clase'}
               </button>
             )}
             <button
               onClick={() => setSelected(null)}
-              className="w-full text-sm text-white/40 hover:text-white/70 py-2 transition-colors"
+              className="w-full text-sm py-2 transition-colors"
+              style={{ color: 'rgba(255,255,255,0.38)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.70)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.38)')}
             >
               Cerrar
             </button>

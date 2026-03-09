@@ -104,43 +104,71 @@ export function PaymentForm({ students, onClose }: Props) {
     })
   }
 
+  const selectStyle: React.CSSProperties = {
+    background: 'rgba(255,255,255,0.06)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    color: '#fff',
+    borderRadius: '0.75rem',
+    padding: '0.625rem 0.75rem',
+    fontSize: '0.875rem',
+    width: '100%',
+    outline: 'none',
+  }
+
   return (
     <motion.div
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 flex items-center justify-center z-50 p-4"
+      style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <motion.div
-        className="rounded-2xl w-full max-w-md border border-white/10 overflow-y-auto max-h-[90vh]"
-        style={{ background: '#1A0A30' }}
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        className="glass-modal rounded-2xl w-full max-w-md overflow-y-auto max-h-[90vh]"
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        exit={{ opacity: 0, scale: 0.96, y: 12 }}
         transition={{ duration: 0.15 }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/10">
-          <h2 className="text-lg font-bold text-white">Registrar pago</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white/70 transition-colors">
-            <X size={18} />
+        <div
+          className="flex items-center justify-between px-6 pt-6 pb-4"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <h2
+            className="text-lg font-semibold text-white tracking-tight"
+            style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+          >
+            Registrar pago
+          </h2>
+          <button
+            onClick={onClose}
+            className="transition-colors p-1 rounded-lg hover:bg-white/[0.06]"
+            style={{ color: 'rgba(255,255,255,0.35)' }}
+          >
+            <X size={16} />
           </button>
         </div>
 
         <div className="p-6 space-y-5">
           {/* Toggle Alumno / Producto */}
-          <div className="flex rounded-xl overflow-hidden border border-white/10" style={{ background: 'rgba(255,255,255,0.04)' }}>
+          <div
+            className="flex rounded-xl overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
             {(['student', 'product'] as const).map((type) => (
               <button
                 key={type}
                 type="button"
                 onClick={() => { setPaymentType(type); setError(null) }}
-                className="flex-1 py-2.5 text-sm font-semibold transition-all"
+                className="flex-1 py-2.5 text-sm font-medium transition-all"
                 style={
                   paymentType === type
-                    ? { background: 'linear-gradient(135deg, #A855F7, #7C3AED)', color: '#fff' }
-                    : { color: 'rgba(255,255,255,0.4)' }
+                    ? { background: 'linear-gradient(135deg, #A855F7, #7C3AED)', color: '#fff', boxShadow: '0 0 16px rgba(168,85,247,0.25)' }
+                    : { color: 'rgba(255,255,255,0.40)' }
                 }
               >
                 {type === 'student' ? 'Alumno' : 'Producto'}
@@ -152,19 +180,18 @@ export function PaymentForm({ students, onClose }: Props) {
             /* ── Producto ── */
             <>
               <div>
-                <label className="block text-sm font-medium text-white/60 mb-1.5">Concepto</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Concepto</label>
                 <input
                   value={productName}
                   onChange={(e) => setProductName(e.target.value)}
                   placeholder="Ej. Agua, Merchandising..."
-                  className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  style={{ background: 'rgba(255,255,255,0.07)' }}
+                  className="glass-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-white/60 mb-1.5">Monto ($)</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Monto ($)</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/40">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>$</span>
                   <input
                     type="number"
                     min="0"
@@ -172,8 +199,8 @@ export function PaymentForm({ students, onClose }: Props) {
                     value={productAmount}
                     onChange={(e) => setProductAmount(e.target.value)}
                     placeholder="0"
-                    className="w-full border border-white/10 rounded-xl pl-7 pr-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    style={{ background: 'rgba(255,255,255,0.07)' }}
+                    className="glass-input"
+                    style={{ paddingLeft: '1.75rem' }}
                   />
                 </div>
               </div>
@@ -182,33 +209,38 @@ export function PaymentForm({ students, onClose }: Props) {
             /* ── Alumno ── */
             <>
               <div>
-                <label className="block text-sm font-medium text-white/60 mb-1.5">Alumno</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Alumno</label>
                 <select
                   value={selectedStudentId}
                   onChange={(e) => handleStudentChange(e.target.value)}
-                  className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  style={{ background: 'rgba(255,255,255,0.07)' }}
+                  style={selectStyle}
                 >
-                  <option value="" style={{ background: '#1A0A30' }}>Seleccionar alumno...</option>
+                  <option value="" style={{ background: '#07050F' }}>Seleccionar alumno...</option>
                   {students.map((s) => (
-                    <option key={s.id} value={s.id} style={{ background: '#1A0A30' }}>{s.full_name}</option>
+                    <option key={s.id} value={s.id} style={{ background: '#07050F' }}>{s.full_name}</option>
                   ))}
                 </select>
               </div>
 
-              {/* Disciplines list */}
               {loadingInfo && (
-                <p className="text-sm text-white/40 text-center py-2">Cargando disciplinas...</p>
+                <p className="text-sm text-center py-2" style={{ color: 'rgba(255,255,255,0.40)' }}>Cargando disciplinas...</p>
               )}
               {studentInfo && studentInfo.disciplines.length > 0 && (
-                <div className="rounded-xl border border-white/10 divide-y divide-white/5" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                <div
+                  className="rounded-xl overflow-hidden"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+                >
                   {studentInfo.disciplines.map((d) => (
-                    <div key={d.id} className="flex items-center justify-between px-4 py-2.5">
+                    <div
+                      key={d.id}
+                      className="flex items-center justify-between px-4 py-2.5"
+                      style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+                    >
                       <div>
                         <p className="text-sm text-white font-medium">{d.name}</p>
-                        <p className="text-xs text-white/40">{d.modality === 'anual' ? 'Anual' : 'Seminario'}</p>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{d.modality === 'anual' ? 'Anual' : 'Seminario'}</p>
                       </div>
-                      <span className="text-sm font-semibold text-white/80">
+                      <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.70)' }}>
                         ${d.monthly_price.toLocaleString('es-AR')}
                       </span>
                     </div>
@@ -216,15 +248,17 @@ export function PaymentForm({ students, onClose }: Props) {
                 </div>
               )}
               {studentInfo && studentInfo.disciplines.length === 0 && (
-                <p className="text-sm text-amber-400/80 bg-amber-500/10 rounded-lg px-3 py-2">
+                <p className="text-sm rounded-xl px-3 py-2" style={{ color: 'rgba(251,191,36,0.80)', background: 'rgba(245,158,11,0.10)' }}>
                   Este alumno no tiene disciplinas activas.
                 </p>
               )}
 
-              {/* Late surcharge checkbox */}
               <label
-                className="flex items-center gap-3 cursor-pointer select-none rounded-xl border border-white/10 px-4 py-3"
-                style={{ background: lateSurcharge ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.04)' }}
+                className="flex items-center gap-3 cursor-pointer select-none rounded-xl px-4 py-3 transition-all"
+                style={{
+                  background: lateSurcharge ? 'rgba(245,158,11,0.10)' : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${lateSurcharge ? 'rgba(245,158,11,0.22)' : 'rgba(255,255,255,0.07)'}`,
+                }}
               >
                 <input
                   type="checkbox"
@@ -234,8 +268,8 @@ export function PaymentForm({ students, onClose }: Props) {
                   style={{ accentColor: '#F59E0B' }}
                 />
                 <div>
-                  <p className="text-sm text-white/80 font-medium">Pago fuera de término</p>
-                  <p className="text-xs text-white/40">Aplica recargo +10%</p>
+                  <p className="text-sm text-white font-medium">Pago fuera de término</p>
+                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>Aplica recargo +10%</p>
                 </div>
               </label>
             </>
@@ -243,8 +277,11 @@ export function PaymentForm({ students, onClose }: Props) {
 
           {/* Method toggle */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5">Método de pago</label>
-            <div className="flex rounded-xl overflow-hidden border border-white/10" style={{ background: 'rgba(255,255,255,0.04)' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Método de pago</label>
+            <div
+              className="flex rounded-xl overflow-hidden"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+            >
               {(['cash', 'transfer'] as const).map((m) => (
                 <button
                   key={m}
@@ -253,8 +290,8 @@ export function PaymentForm({ students, onClose }: Props) {
                   className="flex-1 py-2.5 text-sm font-medium transition-all"
                   style={
                     method === m
-                      ? { background: 'linear-gradient(135deg, #A855F7, #7C3AED)', color: '#fff' }
-                      : { color: 'rgba(255,255,255,0.4)' }
+                      ? { background: 'linear-gradient(135deg, #A855F7, #7C3AED)', color: '#fff', boxShadow: '0 0 16px rgba(168,85,247,0.25)' }
+                      : { color: 'rgba(255,255,255,0.40)' }
                   }
                 >
                   {m === 'cash' ? 'Efectivo' : 'Transferencia'}
@@ -265,8 +302,11 @@ export function PaymentForm({ students, onClose }: Props) {
 
           {/* Breakdown preview */}
           {paymentType === 'student' && studentInfo && base > 0 && (
-            <div className="rounded-xl border border-white/10 p-4 space-y-2 text-sm" style={{ background: 'rgba(255,255,255,0.04)' }}>
-              <div className="flex justify-between text-white/60">
+            <div
+              className="rounded-xl p-4 space-y-2 text-sm"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <div className="flex justify-between" style={{ color: 'rgba(255,255,255,0.55)' }}>
                 <span>Base</span>
                 <span>${base.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
               </div>
@@ -288,7 +328,10 @@ export function PaymentForm({ students, onClose }: Props) {
                   <span>+${transferSurcharge.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
                 </div>
               )}
-              <div className="flex justify-between font-bold text-white border-t border-white/10 pt-2 mt-1 text-base">
+              <div
+                className="flex justify-between font-semibold text-white text-base pt-2 mt-1"
+                style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
+              >
                 <span>Total</span>
                 <span>${studentTotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
               </div>
@@ -296,8 +339,11 @@ export function PaymentForm({ students, onClose }: Props) {
           )}
 
           {paymentType === 'product' && numProductAmount > 0 && method === 'transfer' && (
-            <div className="rounded-xl border border-blue-500/20 p-4 space-y-2 text-sm" style={{ background: 'rgba(59,130,246,0.08)' }}>
-              <div className="flex justify-between text-white/60">
+            <div
+              className="rounded-xl p-4 space-y-2 text-sm"
+              style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.18)' }}
+            >
+              <div className="flex justify-between" style={{ color: 'rgba(255,255,255,0.55)' }}>
                 <span>Monto base</span>
                 <span>${numProductAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
               </div>
@@ -305,20 +351,23 @@ export function PaymentForm({ students, onClose }: Props) {
                 <span>Recargo transferencia (+10%)</span>
                 <span>+${productTransferSurcharge.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
               </div>
-              <div className="flex justify-between font-bold text-white border-t border-white/10 pt-2 mt-1 text-base">
+              <div
+                className="flex justify-between font-semibold text-white text-base pt-2 mt-1"
+                style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
+              >
                 <span>Total</span>
                 <span>${productTotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
           )}
 
-          {error && <p className="text-sm text-red-400 bg-red-500/10 rounded-lg px-3 py-2">{error}</p>}
+          {error && <p className="text-sm text-red-400 rounded-xl px-3 py-2" style={{ background: 'rgba(239,68,68,0.10)' }}>{error}</p>}
 
           <div className="flex gap-3 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-white/10 text-white/60 rounded-xl py-2.5 text-sm font-medium hover:bg-white/5 transition-colors"
+              className="btn-secondary flex-1 rounded-xl py-2.5 text-sm"
             >
               Cancelar
             </button>
@@ -326,8 +375,7 @@ export function PaymentForm({ students, onClose }: Props) {
               type="button"
               disabled={pending}
               onClick={handleSubmit}
-              className="flex-1 text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-50 transition-opacity hover:opacity-80"
-              style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
+              className="btn-primary flex-1 rounded-xl py-2.5 text-sm font-medium"
             >
               {pending
                 ? 'Registrando...'

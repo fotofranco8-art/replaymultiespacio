@@ -91,85 +91,94 @@ function InstructorModal({
 
   return (
     <motion.div
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm p-4"
+      className="fixed inset-0 flex items-center justify-center z-50 p-4"
+      style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <motion.div
-        className="rounded-2xl w-full max-w-md border border-white/10 overflow-y-auto max-h-[90vh]"
-        style={{ background: '#1A0A30' }}
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        className="glass-modal rounded-2xl w-full max-w-md overflow-y-auto max-h-[90vh]"
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        exit={{ opacity: 0, scale: 0.96, y: 12 }}
         transition={{ duration: 0.15 }}
       >
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/10">
-          <h2 className="text-lg font-bold text-white">{title}</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white/70 transition-colors">
-            <X size={18} />
+        <div
+          className="flex items-center justify-between px-6 pt-6 pb-4"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <h2
+            className="text-lg font-semibold text-white tracking-tight"
+            style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+          >
+            {title}
+          </h2>
+          <button
+            onClick={onClose}
+            className="transition-colors p-1 rounded-lg hover:bg-white/[0.06]"
+            style={{ color: 'rgba(255,255,255,0.35)' }}
+          >
+            <X size={16} />
           </button>
         </div>
 
         <div className="p-6 space-y-4">
           {/* Nombre */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5">Nombre Completo</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Nombre Completo</label>
             <input
               value={form.full_name}
               onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
               placeholder="Ej. María García"
-              className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              style={{ background: 'rgba(255,255,255,0.07)' }}
+              className="glass-input"
             />
           </div>
 
           {/* Email (solo al crear) */}
           {!isEdit ? (
             <div>
-              <label className="block text-sm font-medium text-white/60 mb-1.5">
-                Email <span className="text-white/30 text-xs">(para login del profesor)</span>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>
+                Email <span className="font-normal" style={{ color: 'rgba(255,255,255,0.25)' }}>(para login del profesor)</span>
               </label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                 placeholder="profe@ejemplo.com"
-                className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                style={{ background: 'rgba(255,255,255,0.07)' }}
+                className="glass-input"
               />
             </div>
           ) : null}
 
           {/* Teléfono */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5">Teléfono</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Teléfono</label>
             <input
               value={form.phone}
               onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
               placeholder="+54 9 11 1234 5678"
-              className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              style={{ background: 'rgba(255,255,255,0.07)' }}
+              className="glass-input"
             />
           </div>
 
           {/* Especialidades */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5">Especialidades</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Especialidades</label>
             <SpecialtiesGrid
               selected={form.specialties}
               onChange={(s) => setForm((f) => ({ ...f, specialties: s }))}
             />
           </div>
 
-          {error && <p className="text-sm text-red-400 bg-red-500/10 rounded-lg px-3 py-2">{error}</p>}
+          {error && <p className="text-sm text-red-400 rounded-xl px-3 py-2" style={{ background: 'rgba(239,68,68,0.10)' }}>{error}</p>}
 
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-white/10 rounded-xl py-2.5 text-sm text-white/60 hover:bg-white/5 transition-colors font-medium"
+              className="btn-secondary flex-1 rounded-xl py-2.5 text-sm"
             >
               Cancelar
             </button>
@@ -177,8 +186,7 @@ function InstructorModal({
               type="button"
               disabled={pending}
               onClick={handleSave}
-              className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
+              className="btn-primary flex-1 rounded-xl py-2.5 text-sm font-medium"
             >
               {pending ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear Profesor'}
             </button>
@@ -235,87 +243,114 @@ export function InstructorsPageClient({ instructors }: Props) {
 
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Instructores</h1>
-          <p className="text-sm text-white/50 mt-0.5">{instructors.length} registrados</p>
+          <h1
+            className="text-3xl font-semibold text-white tracking-tight"
+            style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+          >
+            Instructores
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.40)' }}>{instructors.length} registrados</p>
         </div>
         <button
           onClick={() => { setError(null); setShowForm(true) }}
-          className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-80"
-          style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
+          className="btn-primary px-4 py-2 rounded-xl text-sm"
         >
           + Nuevo instructor
         </button>
       </div>
 
       {instructors.length === 0 ? (
-        <div className="rounded-xl border border-white/10 p-12 text-center" style={{ background: 'rgba(255,255,255,0.04)' }}>
-          <p className="text-white/40 text-sm">Sin instructores registrados.</p>
+        <div
+          className="rounded-2xl p-12 text-center"
+          style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.07)' }}
+        >
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>Sin instructores registrados.</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-white/10 overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
-          <motion.ul
-            className="divide-y divide-white/5"
-            variants={listContainer}
-            initial="hidden"
-            animate="visible"
-          >
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.07)',
+          }}
+        >
+          <motion.ul variants={listContainer} initial="hidden" animate="visible">
             {instructors.map((inst) => {
               const initials = (inst.full_name ?? '?')
-                .split(' ')
-                .slice(0, 2)
-                .map((n) => n[0])
-                .join('')
-                .toUpperCase()
+                .split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase()
 
               return (
-                <motion.li key={inst.id} variants={listItem} className="flex items-center gap-4 px-4 md:px-6 py-4">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
-                    style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
-                  >
-                    {initials}
+                <motion.li
+                  key={inst.id}
+                  variants={listItem}
+                  className="flex items-center gap-4 px-4 md:px-6 py-4 transition-colors"
+                  style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+                >
+                  <div className="relative shrink-0">
+                    <div
+                      className="absolute inset-0 rounded-full blur-sm opacity-50"
+                      style={{ background: 'rgba(168,85,247,0.35)' }}
+                    />
+                    <div
+                      className="relative w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold text-white"
+                      style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)' }}
+                    >
+                      {initials}
+                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white truncate">{inst.full_name}</p>
-                    <p className="text-xs text-white/40 truncate">{inst.email}</p>
+                    <p className="text-sm font-medium text-white truncate">{inst.full_name}</p>
+                    <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>{inst.email}</p>
                     {inst.specialties?.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
+                      <div className="flex flex-wrap gap-1 mt-1.5">
                         {inst.specialties.slice(0, 3).map((s) => (
-                          <span key={s} className="text-xs px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400">{s}</span>
+                          <span
+                            key={s}
+                            className="text-xs px-1.5 py-0.5 rounded-md font-medium"
+                            style={{ background: 'rgba(168,85,247,0.12)', color: '#C084FC' }}
+                          >
+                            {s}
+                          </span>
                         ))}
                         {inst.specialties.length > 3 && (
-                          <span className="text-xs text-white/30">+{inst.specialties.length - 3}</span>
+                          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.28)' }}>+{inst.specialties.length - 3}</span>
                         )}
                       </div>
                     )}
                   </div>
                   {inst.phone && (
-                    <p className="text-xs text-white/40 hidden md:block shrink-0">{inst.phone}</p>
+                    <p className="text-xs hidden md:block shrink-0" style={{ color: 'rgba(255,255,255,0.35)' }}>{inst.phone}</p>
                   )}
                   <span
-                    className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
-                      inst.is_active
-                        ? 'bg-green-500/20 text-green-400'
-                        : 'bg-white/10 text-white/40'
-                    }`}
+                    className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
+                    style={{
+                      background: inst.is_active ? 'rgba(34,197,94,0.13)' : 'rgba(255,255,255,0.07)',
+                      color: inst.is_active ? '#4ade80' : 'rgba(255,255,255,0.35)',
+                    }}
                   >
                     {inst.is_active ? 'Activo' : 'Inactivo'}
                   </span>
                   <div className="flex gap-3 shrink-0">
                     <button
                       onClick={() => setEditingInstructor(inst)}
-                      className="text-xs text-white/40 hover:text-white/70 transition-colors"
+                      className="text-xs transition-colors"
+                      style={{ color: 'rgba(255,255,255,0.35)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.70)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
                     >
                       Editar
                     </button>
                     <button
-                      onClick={() =>
-                        startTransition(() => toggleInstructorStatus(inst.id, !inst.is_active))
-                      }
+                      onClick={() => startTransition(() => toggleInstructorStatus(inst.id, !inst.is_active))}
                       disabled={pending}
-                      className="text-xs text-white/40 hover:text-white/70 disabled:opacity-50 transition-colors"
+                      className="text-xs transition-colors disabled:opacity-40"
+                      style={{ color: 'rgba(255,255,255,0.35)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.70)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
                     >
                       {inst.is_active ? 'Desactivar' : 'Activar'}
                     </button>

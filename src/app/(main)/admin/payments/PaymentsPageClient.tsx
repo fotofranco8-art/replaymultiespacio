@@ -42,23 +42,28 @@ export function PaymentsPageClient({ payments, summary, students }: Props) {
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Caja</h1>
-          <p className="text-sm text-white/50 mt-0.5 capitalize">{today}</p>
+          <h1
+            className="text-3xl font-semibold text-white tracking-tight"
+            style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+          >
+            Caja
+          </h1>
+          <p className="text-sm mt-1 capitalize" style={{ color: 'rgba(255,255,255,0.40)' }}>{today}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {payments.length > 0 && (
             <>
               <button
                 onClick={() => exportPaymentsPDF(payments, summary)}
-                className="px-4 py-2 rounded-lg text-sm font-medium border border-white/10 text-white/70 hover:bg-white/5 transition-colors"
+                className="btn-secondary px-4 py-2 rounded-xl text-sm"
               >
                 Exportar PDF
               </button>
               <button
                 onClick={exportPayments}
-                className="px-4 py-2 rounded-lg text-sm font-medium border border-white/10 text-white/70 hover:bg-white/5 transition-colors"
+                className="btn-secondary px-4 py-2 rounded-xl text-sm"
               >
                 Exportar Excel
               </button>
@@ -66,8 +71,7 @@ export function PaymentsPageClient({ payments, summary, students }: Props) {
           )}
           <button
             onClick={() => setShowForm(true)}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-80"
-            style={{ background: 'linear-gradient(135deg, #A855F7, #6366F1)' }}
+            className="btn-primary px-4 py-2 rounded-xl text-sm"
           >
             + Registrar pago
           </button>
@@ -76,65 +80,75 @@ export function PaymentsPageClient({ payments, summary, students }: Props) {
 
       <CashRegisterSummary summary={summary} />
 
-      <div className="mt-6 rounded-xl border border-white/10 p-6" style={{ background: 'rgba(255,255,255,0.04)' }}>
-        <h2 className="font-semibold text-white mb-4">Movimientos de hoy</h2>
+      <div
+        className="mt-5 rounded-2xl p-6"
+        style={{
+          background: 'rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255,255,255,0.07)',
+        }}
+      >
+        <h2
+          className="font-semibold text-white mb-4 text-sm tracking-tight"
+          style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
+        >
+          Movimientos de hoy
+        </h2>
         {payments.length === 0 ? (
-          <p className="text-sm text-white/40 py-6 text-center">Sin pagos registrados hoy.</p>
+          <p className="text-sm py-8 text-center" style={{ color: 'rgba(255,255,255,0.35)' }}>Sin pagos registrados hoy.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[580px]">
               <thead>
-                <tr className="text-left border-b border-white/10">
-                  <th className="pb-3 font-medium text-white/50">Tipo</th>
-                  <th className="pb-3 font-medium text-white/50">Concepto</th>
-                  <th className="pb-3 font-medium text-white/50">Método</th>
-                  <th className="pb-3 font-medium text-white/50 text-right">Base</th>
-                  <th className="pb-3 font-medium text-white/50 text-right">Total</th>
-                  <th className="pb-3 font-medium text-white/50">Hora</th>
+                <tr className="text-left" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <th className="pb-3 text-xs font-medium" style={{ color: 'rgba(255,255,255,0.32)' }}>Tipo</th>
+                  <th className="pb-3 text-xs font-medium" style={{ color: 'rgba(255,255,255,0.32)' }}>Concepto</th>
+                  <th className="pb-3 text-xs font-medium" style={{ color: 'rgba(255,255,255,0.32)' }}>Método</th>
+                  <th className="pb-3 text-xs font-medium text-right" style={{ color: 'rgba(255,255,255,0.32)' }}>Base</th>
+                  <th className="pb-3 text-xs font-medium text-right" style={{ color: 'rgba(255,255,255,0.32)' }}>Total</th>
+                  <th className="pb-3 text-xs font-medium" style={{ color: 'rgba(255,255,255,0.32)' }}>Hora</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody>
                 {payments.map((p) => {
                   const concepto = p.payment_type === 'product'
                     ? (p.product_name ?? 'Producto')
                     : (p.profiles?.full_name ?? '—')
 
                   return (
-                    <tr key={p.id} className="hover:bg-white/5 transition-colors">
-                      <td className="py-3">
+                    <tr key={p.id} className="transition-colors" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <td className="py-3.5">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                            p.payment_type === 'product'
-                              ? 'bg-white/10 text-white/60'
-                              : 'bg-purple-500/20 text-purple-400'
-                          }`}
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                          style={{
+                            background: p.payment_type === 'product' ? 'rgba(255,255,255,0.08)' : 'rgba(168,85,247,0.13)',
+                            color: p.payment_type === 'product' ? 'rgba(255,255,255,0.55)' : '#C084FC',
+                          }}
                         >
                           {p.payment_type === 'product' ? '🛍️ Producto' : '🎓 Alumno'}
                         </span>
                       </td>
-                      <td className="py-3 font-medium text-white">{concepto}</td>
-                      <td className="py-3">
+                      <td className="py-3.5 font-medium text-white text-sm">{concepto}</td>
+                      <td className="py-3.5">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                            p.method === 'cash'
-                              ? 'bg-green-500/20 text-green-400'
-                              : 'bg-blue-500/20 text-blue-400'
-                          }`}
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                          style={{
+                            background: p.method === 'cash' ? 'rgba(34,197,94,0.13)' : 'rgba(59,130,246,0.13)',
+                            color: p.method === 'cash' ? '#4ade80' : '#60a5fa',
+                          }}
                         >
                           {p.method === 'cash' ? 'Efectivo' : 'Transferencia'}
                         </span>
                       </td>
-                      <td className="py-3 text-right text-white/60">
+                      <td className="py-3.5 text-right text-sm" style={{ color: 'rgba(255,255,255,0.50)' }}>
                         ${Number(p.amount).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
                       </td>
-                      <td className="py-3 text-right font-semibold text-white">
+                      <td className="py-3.5 text-right font-semibold text-white text-sm">
                         ${Number(p.final_amount).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
                       </td>
-                      <td className="py-3 text-white/40">
-                        {new Date(p.created_at).toLocaleTimeString('es-AR', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                      <td className="py-3.5 text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                        {new Date(p.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
                       </td>
                     </tr>
                   )
