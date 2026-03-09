@@ -12,8 +12,8 @@ async function getTeacherClasses(teacherId: string) {
     .select(`
       id, scheduled_date, start_time, end_time, room,
       disciplines (name, color),
-      attendance (count),
-      class_enrollments (count)
+      attendance (id),
+      class_enrollments (id)
     `)
     .eq('teacher_id', teacherId)
     .eq('scheduled_date', today)

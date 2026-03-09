@@ -26,49 +26,46 @@ export async function getNextClass(studentId: string): Promise<NextClass | null>
   const supabase = await createClient()
   const today = new Date().toISOString().split('T')[0]
 
-  const { data } = await supabase
+  // Paso 1: obtener los IDs de clases en las que está inscripto
+  const { data: enrollments } = await supabase
     .from('class_enrollments')
-    .select(`
-      class_id,
-      classes!inner (
-        id, scheduled_date, start_time, end_time, is_cancelled, room,
-        disciplines (name, color),
-        profiles!classes_teacher_id_fkey (full_name)
-      )
-    `)
+    .select('class_id')
     .eq('student_id', studentId)
-    .gte('classes.scheduled_date', today)
-    .eq('classes.is_cancelled', false)
-    .order('classes.scheduled_date', { ascending: true })
-    .order('classes.start_time', { ascending: true })
+
+  if (!enrollments?.length) return null
+
+  const classIds = enrollments.map((e) => e.class_id)
+
+  // Paso 2: buscar la próxima clase directamente en la tabla classes
+  const { data: cls } = await supabase
+    .from('classes')
+    .select(`
+      id, scheduled_date, start_time, end_time, room,
+      disciplines (name, color),
+      profiles!classes_teacher_id_fkey (full_name)
+    `)
+    .in('id', classIds)
+    .gte('scheduled_date', today)
+    .eq('is_cancelled', false)
+    .order('scheduled_date', { ascending: true })
+    .order('start_time', { ascending: true })
     .limit(1)
+    .maybeSingle()
 
-  if (!data || data.length === 0) return null
+  if (!cls) return null
 
-  const raw = data[0].classes as unknown as {
-    id: string
-    scheduled_date: string
-    start_time: string
-    end_time: string
-    room: string
-    disciplines: { name: string; color: string } | { name: string; color: string }[] | null
-    profiles: { full_name: string } | { full_name: string }[] | null
-  }
-
-  if (!raw) return null
-
-  const disc = Array.isArray(raw.disciplines) ? raw.disciplines[0] : raw.disciplines
-  const teacher = Array.isArray(raw.profiles) ? raw.profiles[0] : raw.profiles
+  const disc = Array.isArray(cls.disciplines) ? cls.disciplines[0] : cls.disciplines
+  const teacher = Array.isArray(cls.profiles) ? cls.profiles[0] : cls.profiles
 
   return {
-    id: raw.id,
-    scheduledDate: raw.scheduled_date,
-    startTime: raw.start_time,
-    endTime: raw.end_time,
-    disciplineName: disc?.name ?? 'Clase',
-    disciplineColor: disc?.color ?? '#A855F7',
-    room: raw.room ?? '',
-    teacherName: teacher?.full_name ?? '',
+    id: cls.id,
+    scheduledDate: cls.scheduled_date,
+    startTime: cls.start_time,
+    endTime: cls.end_time,
+    disciplineName: (disc as { name: string; color: string } | null)?.name ?? 'Clase',
+    disciplineColor: (disc as { name: string; color: string } | null)?.color ?? '#A855F7',
+    room: (cls.room as string | null) ?? '',
+    teacherName: (teacher as { full_name: string } | null)?.full_name ?? '',
   }
 }
 
@@ -76,48 +73,50 @@ export async function getAttendanceHistory(studentId: string, limit = 5): Promis
   const supabase = await createClient()
   const today = new Date().toISOString().split('T')[0]
 
+  // Paso 1: obtener los IDs de clases en las que está inscripto
   const { data: enrollments } = await supabase
     .from('class_enrollments')
-    .select(`
-      class_id,
-      classes!inner (
-        id, scheduled_date, start_time, is_cancelled,
-        disciplines (name, color)
-      )
-    `)
+    .select('class_id')
     .eq('student_id', studentId)
-    .lt('classes.scheduled_date', today)
-    .order('classes.scheduled_date', { ascending: false })
-    .limit(limit)
 
-  if (!enrollments || enrollments.length === 0) return []
+  if (!enrollments?.length) return []
 
   const classIds = enrollments.map((e) => e.class_id)
 
+  // Paso 2: buscar clases pasadas directamente en la tabla classes
+  const { data: classes } = await supabase
+    .from('classes')
+    .select(`
+      id, scheduled_date, start_time,
+      disciplines (name, color)
+    `)
+    .in('id', classIds)
+    .lt('scheduled_date', today)
+    .order('scheduled_date', { ascending: false })
+    .limit(limit)
+
+  if (!classes?.length) return []
+
+  const pastClassIds = classes.map((c) => c.id)
+
+  // Paso 3: verificar cuáles tuvieron asistencia
   const { data: attendanceRecords } = await supabase
     .from('attendance')
     .select('class_id')
     .eq('student_id', studentId)
-    .in('class_id', classIds)
+    .in('class_id', pastClassIds)
 
   const attendedIds = new Set((attendanceRecords ?? []).map((a) => a.class_id))
 
-  return enrollments.map((e) => {
-    const cls = e.classes as unknown as {
-      id: string
-      scheduled_date: string
-      start_time: string
-      disciplines: { name: string; color: string } | { name: string; color: string }[] | null
-    }
-    const disc = Array.isArray(cls?.disciplines) ? cls.disciplines[0] : cls?.disciplines
-
+  return classes.map((cls) => {
+    const disc = Array.isArray(cls.disciplines) ? cls.disciplines[0] : cls.disciplines
     return {
-      classId: cls?.id ?? e.class_id,
-      className: disc?.name ?? 'Clase',
-      scheduledDate: cls?.scheduled_date ?? '',
-      startTime: cls?.start_time ?? '',
-      disciplineColor: disc?.color ?? '#A855F7',
-      status: attendedIds.has(e.class_id) ? 'PRESENTE' : 'AUSENTE',
+      classId: cls.id,
+      className: (disc as { name: string; color: string } | null)?.name ?? 'Clase',
+      scheduledDate: cls.scheduled_date,
+      startTime: cls.start_time,
+      disciplineColor: (disc as { name: string; color: string } | null)?.color ?? '#A855F7',
+      status: attendedIds.has(cls.id) ? 'PRESENTE' : 'AUSENTE',
     }
   })
 }
