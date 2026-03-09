@@ -1,11 +1,12 @@
 import { getProfile } from '@/features/auth/services/auth.actions'
 import { createClient } from '@/lib/supabase/server'
+import { getMyProfile } from '@/lib/supabase/profile-helper'
 import { getMonthlyRevenue, getTeacherAlerts } from '@/features/scheduling/services/scheduling.actions'
 import Link from 'next/link'
 
 async function getAdminStats() {
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('center_id').single()
+  const profile = await getMyProfile()
   if (!profile?.center_id) return null
 
   const today = new Date().toISOString().split('T')[0]
