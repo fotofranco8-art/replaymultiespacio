@@ -36,9 +36,13 @@ export function TeacherAgendaClient({ teacherId, initialWeekStart, initialClasse
   function navigateWeek(direction: -1 | 1) {
     const next = addDays(weekStart, direction * 7)
     startTransition(async () => {
-      const data = await getTeacherWeekClasses(teacherId, next)
-      setWeekStart(next)
-      setClasses(data)
+      try {
+        const data = await getTeacherWeekClasses(teacherId, next)
+        setWeekStart(next)
+        setClasses(data)
+      } catch {
+        // Si falla la carga, no se cambia la semana
+      }
     })
   }
 

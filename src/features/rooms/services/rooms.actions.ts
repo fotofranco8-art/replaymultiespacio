@@ -169,6 +169,7 @@ export async function rotateRoomsForWeek(
       .not('room', 'is', null)
       .lt('scheduled_date', weekStartDate)
       .order('scheduled_date', { ascending: false })
+      .limit(templateIds.length * 4) // máximo 4 semanas de historial por plantilla
 
     for (const row of prevRows ?? []) {
       if (row.template_id && !prevAssignments.has(row.template_id) && row.room) {
