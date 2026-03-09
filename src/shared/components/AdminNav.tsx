@@ -20,6 +20,8 @@ import {
   ChevronRight,
   Menu,
   X,
+  CreditCard,
+  BarChart3,
 } from 'lucide-react'
 
 const NAV_SECTIONS = [
@@ -30,6 +32,7 @@ const NAV_SECTIONS = [
       { href: '/admin/students', label: 'Alumnos', icon: Users },
       { href: '/admin/instructors', label: 'Instructores', icon: UserCheck },
       { href: '/admin/payments', label: 'Caja', icon: Banknote },
+      { href: '/admin/memberships', label: 'Membresías', icon: CreditCard },
     ],
   },
   {
@@ -45,6 +48,12 @@ const NAV_SECTIONS = [
     items: [
       { href: '/admin/disciplines', label: 'Disciplinas', icon: Palette },
       { href: '/admin/rooms', label: 'Aulas', icon: DoorOpen },
+    ],
+  },
+  {
+    label: 'ANÁLISIS',
+    items: [
+      { href: '/admin/reports', label: 'Reportes', icon: BarChart3 },
     ],
   },
 ]
