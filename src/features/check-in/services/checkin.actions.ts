@@ -72,10 +72,12 @@ export async function validateAndCheckin(token: string): Promise<CheckinResult> 
     return { success: false, message: 'Tu acceso está bloqueado. Regularizá tu pago.' }
   }
 
-  // 4. Find active class right now (±15 min window)
+  // 4. Find active class right now
+  // Vercel corre en UTC; Argentina es siempre UTC-3 (sin DST)
   const now = new Date()
-  const todayDate = now.toISOString().split('T')[0]
-  const currentTime = now.toTimeString().slice(0, 5) // HH:MM
+  const argNow = new Date(now.getTime() - 3 * 60 * 60 * 1000)
+  const todayDate = argNow.toISOString().split('T')[0]
+  const currentTime = argNow.toISOString().slice(11, 16) // HH:MM en hora argentina
 
   const { data: activeClass } = await supabase
     .from('classes')

@@ -17,6 +17,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Los server actions (POST con Next-Action header) no deben ser redirigidos
+  // por chequeo de rol — dejar pasar y que el action valide la sesión
+  if (request.method === 'POST' && request.headers.get('Next-Action')) {
+    return NextResponse.next()
+  }
+
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -54,10 +60,10 @@ export async function middleware(request: NextRequest) {
 
   const role = profile?.role as string | undefined
 
+  // Solo redirigir si tenemos un role confirmado — si falla el query no bloqueamos
   if (role) {
     for (const [allowedRole, routes] of Object.entries(ROLE_ROUTES)) {
       if (routes.some((r) => pathname.startsWith(r)) && role !== allowedRole) {
-        // Redirigir a su propia ruta
         const ownRoute = ROLE_ROUTES[role]?.[0] ?? '/login'
         return NextResponse.redirect(new URL(ownRoute, request.url))
       }
