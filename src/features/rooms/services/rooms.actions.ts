@@ -83,6 +83,13 @@ export async function toggleRoom(id: string, isActive: boolean) {
   revalidatePath('/admin/rooms')
 }
 
+export async function deleteRoom(id: string) {
+  const supabase = await createClient()
+  const { error } = await supabase.from('rooms').delete().eq('id', id)
+  if (error) throw error
+  revalidatePath('/admin/rooms')
+}
+
 // Calcula el número de semana ISO de una fecha
 function getISOWeek(d: Date): number {
   const date = new Date(d)
