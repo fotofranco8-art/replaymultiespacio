@@ -28,6 +28,7 @@ export function PaymentForm({ students, onClose }: Props) {
   const [studentInfo, setStudentInfo] = useState<StudentPaymentInfo | null>(null)
   const [loadingInfo, setLoadingInfo] = useState(false)
   const [lateSurcharge, setLateSurcharge] = useState(false)
+  const [manualAmount, setManualAmount] = useState('')
 
   // Product payment state
   const [productName, setProductName] = useState('')
@@ -48,8 +49,12 @@ export function PaymentForm({ students, onClose }: Props) {
     }
   }
 
+  // Si no hay disciplinas configuradas, se usa el monto manual
+  const noDiscipinas = studentInfo !== null && studentInfo.disciplines.length === 0
+  const manualAmountNum = parseFloat(manualAmount) || 0
+
   // Student payment calculation preview
-  const base = studentInfo?.base_amount ?? 0
+  const base = noDiscipinas ? manualAmountNum : (studentInfo?.base_amount ?? 0)
   const multiDiscount = studentInfo?.has_multi_discount ? base * 0.10 : 0
   const afterDiscount = base - multiDiscount
   const lateFee = lateSurcharge ? afterDiscount * 0.10 : 0
@@ -72,7 +77,12 @@ export function PaymentForm({ students, onClose }: Props) {
       if (numProductAmount <= 0) { setError('El monto debe ser mayor a 0'); return }
     } else {
       if (!selectedStudentId) { setError('Seleccioná un alumno'); return }
-      if (base <= 0) { setError('El alumno no tiene disciplinas activas con precio'); return }
+      if (base <= 0) {
+        setError(noDiscipinas
+          ? 'Ingresá un monto para el pago'
+          : 'El alumno no tiene disciplinas activas con precio')
+        return
+      }
     }
 
     startTransition(async () => {
@@ -247,10 +257,28 @@ export function PaymentForm({ students, onClose }: Props) {
                   ))}
                 </div>
               )}
-              {studentInfo && studentInfo.disciplines.length === 0 && (
-                <p className="text-sm rounded-xl px-3 py-2" style={{ color: 'rgba(251,191,36,0.80)', background: 'rgba(245,158,11,0.10)' }}>
-                  Este alumno no tiene disciplinas activas.
-                </p>
+              {noDiscipinas && (
+                <div className="space-y-3">
+                  <p className="text-sm rounded-xl px-3 py-2" style={{ color: 'rgba(251,191,36,0.80)', background: 'rgba(245,158,11,0.10)' }}>
+                    Sin disciplinas configuradas. Ingresá el monto manualmente o asigná disciplinas desde <strong>Alumnos &gt; Editar</strong>.
+                  </p>
+                  <div>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Monto a cobrar ($)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={manualAmount}
+                        onChange={(e) => setManualAmount(e.target.value)}
+                        placeholder="0"
+                        className="glass-input"
+                        style={{ paddingLeft: '1.75rem' }}
+                      />
+                    </div>
+                  </div>
+                </div>
               )}
 
               <label

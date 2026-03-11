@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Space_Grotesk, Manrope, Space_Mono } from 'next/font/google'
 import { Toaster } from 'sonner'
 import './globals.css'
@@ -10,6 +10,19 @@ const spaceMono = Space_Mono({ subsets: ['latin'], weight: ['400', '700'], varia
 export const metadata: Metadata = {
   title: 'Replay Multiespacio Artístico',
   description: 'Portal de gestión y alumnos de Replay Multiespacio Artístico',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Replay',
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#FF2D78',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({
