@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="glow-blue" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6" result="blur1"/>
+      <feGaussianBlur stdDeviation="12" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-pink" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7" result="blur1"/>
+      <feGaussianBlur stdDeviation="14" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-white" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="5" result="blur1"/>
+      <feGaussianBlur stdDeviation="10" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fondo oscuro -->
+  <rect width="512" height="512" fill="#07050F" rx="90"/>
+
+  <!-- Anillo exterior blanco/lavanda (parcial) -->
+  <path d="M 256 56 A 200 200 0 1 1 80 368" fill="none" stroke="#C8C0FF" stroke-width="6" stroke-linecap="round" filter="url(#glow-white)" opacity="0.9"/>
+
+  <!-- Anillo interior rosa/magenta (parcial) -->
+  <path d="M 256 86 A 170 170 0 1 1 104 365" fill="none" stroke="#FF2D78" stroke-width="5" stroke-linecap="round" filter="url(#glow-pink)" opacity="0.85"/>
+
+  <!-- Cuerpo del micrófono - contorno exterior -->
+  <rect x="196" y="90" width="120" height="190" rx="60" ry="60" fill="none" stroke="#00CFFF" stroke-width="5" filter="url(#glow-blue)"/>
+
+  <!-- Grilla del micrófono (líneas horizontales) -->
+  <line x1="212" y1="130" x2="300" y2="130" stroke="#00CFFF" stroke-width="3.5" stroke-linecap="round" filter="url(#glow-blue)"/>
+  <line x1="208" y1="150" x2="304" y2="150" stroke="#00CFFF" stroke-width="3.5" stroke-linecap="round" filter="url(#glow-blue)"/>
+  <line x1="206" y1="170" x2="306" y2="170" stroke="#00CFFF" stroke-width="3.5" stroke-linecap="round" filter="url(#glow-blue)"/>
+  <line x1="206" y1="190" x2="306" y2="190" stroke="#00CFFF" stroke-width="3.5" stroke-linecap="round" filter="url(#glow-blue)"/>
+  <line x1="207" y1="210" x2="305" y2="210" stroke="#00CFFF" stroke-width="3.5" stroke-linecap="round" filter="url(#glow-blue)"/>
+  <line x1="210" y1="230" x2="302" y2="230" stroke="#00CFFF" stroke-width="3.5" stroke-linecap="round" filter="url(#glow-blue)"/>
+  <line x1="216" y1="248" x2="296" y2="248" stroke="#00CFFF" stroke-width="3.5" stroke-linecap="round" filter="url(#glow-blue)"/>
+
+  <!-- Brazo izquierdo del soporte -->
+  <path d="M 196 275 Q 170 310 168 345" fill="none" stroke="#C8C0FF" stroke-width="4.5" stroke-linecap="round" filter="url(#glow-white)"/>
+  <!-- Brazo derecho del soporte -->
+  <path d="M 316 275 Q 342 310 344 345" fill="none" stroke="#C8C0FF" stroke-width="4.5" stroke-linecap="round" filter="url(#glow-white)"/>
+
+  <!-- Palo vertical -->
+  <line x1="256" y1="280" x2="256" y2="375" stroke="#C8C0FF" stroke-width="4.5" stroke-linecap="round" filter="url(#glow-white)"/>
+
+  <!-- Base horizontal -->
+  <line x1="192" y1="375" x2="320" y2="375" stroke="#C8C0FF" stroke-width="4.5" stroke-linecap="round" filter="url(#glow-white)"/>
+
+  <!-- Nota musical arriba derecha (rosa/magenta) -->
+  <text x="330" y="138" font-size="46" fill="#FF2D78" filter="url(#glow-pink)" font-family="Georgia, serif">♪</text>
+
+  <!-- Nota musical abajo izquierda (blanco) -->
+  <text x="118" y="362" font-size="40" fill="#C8C0FF" filter="url(#glow-white)" font-family="Georgia, serif">♫</text>
+
+  <!-- Círculos pequeños en la base -->
+  <circle cx="210" cy="355" r="13" fill="none" stroke="#00CFFF" stroke-width="3.5" filter="url(#glow-blue)"/>
+  <circle cx="302" cy="355" r="13" fill="none" stroke="#00CFFF" stroke-width="3.5" filter="url(#glow-blue)"/>
+</svg>
