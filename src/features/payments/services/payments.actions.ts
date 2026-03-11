@@ -62,13 +62,13 @@ export async function getStudentPaymentInfo(studentId: string): Promise<StudentP
   const profile = await getMyProfile()
   if (!profile?.center_id) throw new Error('No center found')
 
-  // Get active memberships with discipline details
+  // Incluir membresías activas, suspendidas y vencidas para poder cobrar la renovación
   const { data: memberships } = await supabase
     .from('memberships')
     .select('discipline_id')
     .eq('student_id', studentId)
     .eq('center_id', profile.center_id)
-    .eq('status', 'active')
+    .in('status', ['active', 'suspended', 'expired'])
 
   const disciplineIds = (memberships ?? []).map((m) => m.discipline_id).filter(Boolean)
 
@@ -132,7 +132,7 @@ export async function registerPayment(input: NewPaymentInput) {
       .select('id')
       .eq('student_id', input.student_id)
       .eq('center_id', adminProfile.center_id)
-      .eq('status', 'active')
+      .in('status', ['active', 'suspended', 'expired'])
       .maybeSingle()
     membership_id = membership?.id ?? null
   }
@@ -155,8 +155,15 @@ export async function registerPayment(input: NewPaymentInput) {
 
   if (error) throw error
 
-  // Unblock memberships when student pays
+  // Reactivar membresías suspendidas/vencidas y desbloquear todas al registrar un pago
   if (!is_product && input.student_id) {
+    await supabase
+      .from('memberships')
+      .update({ status: 'active', is_blocked: false })
+      .eq('student_id', input.student_id)
+      .eq('center_id', adminProfile.center_id)
+      .in('status', ['suspended', 'expired'])
+    // También desbloquear las ya activas por si acaso
     await supabase
       .from('memberships')
       .update({ is_blocked: false })
